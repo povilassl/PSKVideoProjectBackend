@@ -17,7 +17,7 @@ namespace PSKVideoProjectBackend.Controllers
         [HttpGet(Name = "Test")]
         public string Get()
         {
-            return "hey";
+            return "Hello";
         }
     }
 }
