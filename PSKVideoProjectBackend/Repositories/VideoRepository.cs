@@ -15,20 +15,26 @@ namespace PSKVideoProjectBackend.Repositories
 
         public async Task<IEnumerable<UploadedVideo>>? GetListOfVideos(int startIndex, int count)
         {
-            var allVideos = await _apiDbContext.UploadedVideos.ToListAsync();
+            var allVideos = _apiDbContext.UploadedVideos.ToList();
 
-            if (startIndex + count > allVideos.Count) return null;
+            int endIndex = startIndex + count - 1;
 
-            return allVideos.GetRange(startIndex, count).ToList();
+            // If startIndex is greater than or equal to the length of the originalList, return a new empty list
+            if (startIndex >= allVideos.Count) return new List<UploadedVideo>();
+
+            // If endIndex is greater than or equal to the length of the originalList, set it to the last index of the originalList
+            if (endIndex >= allVideos.Count) endIndex = allVideos.Count - 1;
+
+            // Create a sublist from the originalList starting at the startIndex and ending at the endIndex
+            return allVideos.GetRange(startIndex, endIndex - startIndex + 1);
         }
 
-        public async Task<UploadedVideo> UploadVideo(UploadedVideo video)
+        public async Task<UploadedVideo> UploadVideo([FromBody] VideoToUpload video)
         {
-            video.LikeCount = 0;
-            video.DislikeCount = 0;
-            video.ViewCount = 0;
+            //TODO: cia reikia ikelt i az dar + gaut url ir length
+            var uploaded = new UploadedVideo(video);
 
-            var result = await _apiDbContext.UploadedVideos.AddAsync(video);
+            var result = await _apiDbContext.UploadedVideos.AddAsync(uploaded);
             await _apiDbContext.SaveChangesAsync();
             return result.Entity;
         }

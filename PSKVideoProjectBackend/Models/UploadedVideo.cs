@@ -1,4 +1,5 @@
 ﻿using PSKVideoProjectBackend.Properties;
+using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace PSKVideoProjectBackend.Models
@@ -7,7 +8,7 @@ namespace PSKVideoProjectBackend.Models
     {
         [Key]
         public long Id { get; set; }
-        public String Name { get; set; }
+        public String VideoName { get; set; }
         public String URL { get; set; }
         public uint VideoLengthInSeconds { get; set; }
         public DateTime UploadDateTime { get; set; }
@@ -19,7 +20,7 @@ namespace PSKVideoProjectBackend.Models
 
         public UploadedVideo()
         {
-            Name = Resources.FillerVideoName;
+            VideoName = Resources.FillerVideoName;
             URL = Resources.FillerVideoURL;
             VideoLengthInSeconds = 0;
             UploadDateTime = DateTime.Now;
@@ -28,6 +29,21 @@ namespace PSKVideoProjectBackend.Models
             ViewCount = 0;
             Username = Resources.FillerVideoUsername;
             Description = Resources.FillerVideoDescription;
+        }
+
+        public UploadedVideo(VideoToUpload videoToUpload)
+        {
+            VideoName = videoToUpload.VideoName;
+            Username = videoToUpload.Username;
+            Description = videoToUpload.Description;
+
+            //TODO: finish: url + length
+            URL = "";
+            VideoLengthInSeconds = 0;
+            UploadDateTime = DateTime.Now;
+            LikeCount = 0;
+            DislikeCount = 0;
+            ViewCount = 0;
         }
     }
 }
