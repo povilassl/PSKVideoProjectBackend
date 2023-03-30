@@ -36,7 +36,7 @@ namespace PSKVideoProjectBackend.Controllers
 
         //Sitas dar neaisku, ar bus open, ar closed - bet kuriuo atveju kazkokia autetifikacija praverstu
         [HttpPost("UploadVideo")]
-        public async Task<ActionResult<UploadedVideo>> UploadVideo(UploadedVideo video)
+        public async Task<ActionResult<UploadedVideo>> UploadVideo(VideoToUpload video)
         {
             try
             {
