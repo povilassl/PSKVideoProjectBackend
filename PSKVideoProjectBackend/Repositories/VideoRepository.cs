@@ -29,12 +29,19 @@ namespace PSKVideoProjectBackend.Repositories
             return allVideos.GetRange(startIndex, endIndex - startIndex + 1);
         }
 
-        public async Task<UploadedVideo> UploadVideo([FromBody] VideoToUpload video)
+        public async Task<UploadedVideo> UploadVideo(VideoToUpload video)
         {
             //TODO: cia reikia ikelt i az dar + gaut url ir length
             var uploaded = new UploadedVideo(video);
 
             var result = await _apiDbContext.UploadedVideos.AddAsync(uploaded);
+            await _apiDbContext.SaveChangesAsync();
+            return result.Entity;
+        }
+
+        public async Task<UploadedVideo> UploadVideoTemp(UploadedVideo video)
+        {
+            var result = await _apiDbContext.UploadedVideos.AddAsync(video);
             await _apiDbContext.SaveChangesAsync();
             return result.Entity;
         }

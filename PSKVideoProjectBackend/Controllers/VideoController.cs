@@ -36,11 +36,38 @@ namespace PSKVideoProjectBackend.Controllers
 
         //Sitas dar neaisku, ar bus open, ar closed - bet kuriuo atveju kazkokia autetifikacija praverstu
         [HttpPost("UploadVideo")]
-        public async Task<ActionResult<UploadedVideo>> UploadVideo(VideoToUpload video)
+        public async Task<ActionResult<UploadedVideo>> UploadVideo([FromBody] VideoToUpload video)
         {
             try
             {
                 var result = await _videoRepository.UploadVideo(video);
+
+                if (result == null) return StatusCode(StatusCodes.Status500InternalServerError, Resources.ErrInsertToDB);
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(Resources.Exception + " : " + ex.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError, Resources.ErrInsertToDB);
+            }
+        }
+
+        /// <summary>
+        /// Upload video by specifying all parameters
+        /// </summary>
+        /// <remarks>
+        /// Since we don't yet need a complete endpoint (for v1), we can upload and encode videos manually and 
+        /// then use this controller to add all info to the database
+        /// </remarks>
+        /// <param name="video"></param>
+        /// <returns></returns>
+        [HttpPost("UploadVideoTemp")]
+        public async Task<ActionResult<UploadedVideo>> UploadVideoTemp([FromBody] UploadedVideo video)
+        {
+            try
+            {
+                var result = await _videoRepository.UploadVideoTemp(video);
 
                 if (result == null) return StatusCode(StatusCodes.Status500InternalServerError, Resources.ErrInsertToDB);
 
