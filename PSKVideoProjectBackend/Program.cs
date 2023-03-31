@@ -18,6 +18,15 @@ internal class Program
             $"{Assembly.GetExecutingAssembly().GetName().Name}.xml"));
         });
 
+        builder.Services.AddCors(options => {
+            options.AddDefaultPolicy(
+                builder => {
+                    builder.AllowAnyOrigin()
+                                     .AllowAnyMethod()
+                                     .AllowAnyHeader();
+                });
+        });
+
         bool isDevelopment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development";
 
         string dataSource = "Data source = ";
@@ -37,6 +46,8 @@ internal class Program
         builder.Services.AddScoped<VideoRepository>();
 
         var app = builder.Build();
+
+        app.UseCors();
 
         //enable swagger in both Debug and Release
         app.UseSwagger();
