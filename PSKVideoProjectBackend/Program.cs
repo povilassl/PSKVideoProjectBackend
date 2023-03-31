@@ -1,10 +1,22 @@
+using Microsoft.EntityFrameworkCore;
+using PSKVideoProjectBackend;
+using PSKVideoProjectBackend.Repositories;
+using System.Diagnostics;
+using System.Reflection;
+
 internal class Program
 {
     private static void Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
 
-        // Add services to the container.
+        builder.Services.AddControllers();
+        // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+        builder.Services.AddEndpointsApiExplorer();
+        builder.Services.AddSwaggerGen(c => {
+            c.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory,
+            $"{Assembly.GetExecutingAssembly().GetName().Name}.xml"));
+        });
 
         builder.Services.AddCors(options => {
             options.AddDefaultPolicy(
@@ -15,21 +27,31 @@ internal class Program
                 });
         });
 
-        builder.Services.AddControllers();
-        // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-        builder.Services.AddEndpointsApiExplorer();
-        builder.Services.AddSwaggerGen();
+        bool isDevelopment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development";
+
+        string dataSource = "Data source = ";
+
+        if (isDevelopment)
+        {
+            dataSource += "DB/ProjectDatabase.db";
+        }
+        else
+        {
+            dataSource += "C:/home/site/wwwroot/ProjectDatabase.db";
+        }
+
+        builder.Services.AddDbContext<ApiDbContext>(o => o.UseSqlite(dataSource));
+
+        //repositories
+        builder.Services.AddScoped<VideoRepository>();
 
         var app = builder.Build();
 
         app.UseCors();
 
-        // Configure the HTTP request pipeline.
-        //if (app.Environment.IsDevelopment())
-        //{
+        //enable swagger in both Debug and Release
         app.UseSwagger();
         app.UseSwaggerUI();
-        //}
 
         app.UseHttpsRedirection();
 
