@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using PSKVideoProjectBackend;
 using PSKVideoProjectBackend.Repositories;
 using System.Diagnostics;
+using System.Reflection;
 
 internal class Program
 {
@@ -12,7 +13,10 @@ internal class Program
         builder.Services.AddControllers();
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         builder.Services.AddEndpointsApiExplorer();
-        builder.Services.AddSwaggerGen();
+        builder.Services.AddSwaggerGen(c => {
+            c.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory,
+            $"{Assembly.GetExecutingAssembly().GetName().Name}.xml"));
+        });
 
         bool isDevelopment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development";
 
