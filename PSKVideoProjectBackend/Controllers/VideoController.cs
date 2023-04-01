@@ -63,15 +63,23 @@ namespace PSKVideoProjectBackend.Controllers
         /// <param name="video"></param>
         /// <returns></returns>
         [HttpPost("UploadVideoTemp")]
-        public async Task<ActionResult<UploadedVideo>> UploadVideoTemp([FromBody] UploadedVideo video)
+        public async Task<ActionResult<IEnumerable<UploadedVideo>>> UploadVideoTemp([FromBody] List<UploadedVideo> videos)
         {
             try
             {
-                var result = await _videoRepository.UploadVideoTemp(video);
+                var resList = new List<UploadedVideo>();
 
-                if (result == null) return StatusCode(StatusCodes.Status500InternalServerError, Resources.ErrInsertToDB);
+                foreach (var video in videos)
+                {
+                    video.Id = 0;
+                    var result = await _videoRepository.UploadVideoTemp(video);
 
-                return Ok(result);
+                    if (result == null) return StatusCode(StatusCodes.Status500InternalServerError, Resources.ErrVideoNotFoundById);
+
+                    resList.Add(result);
+                }
+
+                return Ok(resList);
             }
             catch (Exception ex)
             {
