@@ -61,11 +61,29 @@ namespace PSKVideoProjectBackend.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Comment with the supplied Id not found.
+        /// </summary>
+        public static string ErrCommentNotFoundById {
+            get {
+                return ResourceManager.GetString("ErrCommentNotFoundById", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to There was an error while inserting data into the database..
         /// </summary>
         public static string ErrInsertToDB {
             get {
                 return ResourceManager.GetString("ErrInsertToDB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Error: Not all info supplied.
+        /// </summary>
+        public static string ErrNotAllInfo {
+            get {
+                return ResourceManager.GetString("ErrNotAllInfo", resourceCulture);
             }
         }
         
@@ -88,11 +106,29 @@ namespace PSKVideoProjectBackend.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Video with the supplied Id not found .
+        /// </summary>
+        public static string ErrVideoNotFoundById {
+            get {
+                return ResourceManager.GetString("ErrVideoNotFoundById", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Exception.
         /// </summary>
         public static string Exception {
             get {
                 return ResourceManager.GetString("Exception", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Comment.
+        /// </summary>
+        public static string FillerComment {
+            get {
+                return ResourceManager.GetString("FillerComment", resourceCulture);
             }
         }
         
