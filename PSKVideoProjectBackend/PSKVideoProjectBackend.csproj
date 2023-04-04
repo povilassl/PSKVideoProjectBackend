@@ -30,6 +30,7 @@
 
   <ItemGroup>
     <Folder Include="DB\" />
+    <Folder Include="DB\" />
   </ItemGroup>
 
 </Project>
