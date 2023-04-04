@@ -70,6 +70,24 @@ namespace PSKVideoProjectBackend.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Error: &apos;count&apos; can not be less or equal to 0.
+        /// </summary>
+        public static string ErrCountLessOrEqualZero {
+            get {
+                return ResourceManager.GetString("ErrCountLessOrEqualZero", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Error: index can not be less than 0.
+        /// </summary>
+        public static string ErrIndexLessThanZero {
+            get {
+                return ResourceManager.GetString("ErrIndexLessThanZero", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to There was an error while inserting data into the database..
         /// </summary>
         public static string ErrInsertToDB {
