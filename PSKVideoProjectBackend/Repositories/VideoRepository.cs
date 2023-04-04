@@ -169,5 +169,10 @@ namespace PSKVideoProjectBackend.Repositories
 
             return video;
         }
+
+        public async Task<int> GetCountOfAllVideos()
+        {
+            return await _apiDbContext.UploadedVideos.CountAsync();
+        }
     }
 }
