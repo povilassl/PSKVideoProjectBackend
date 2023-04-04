@@ -17,11 +17,15 @@ namespace PSKVideoProjectBackend.Controllers
         }
 
         [HttpGet("GetListOfVideos")]
-        public async Task<ActionResult<IEnumerable<UploadedVideo>>> GetListOfVideos(int startIndex = 0, int endIndex = 20)
+        public ActionResult<IEnumerable<UploadedVideo>> GetListOfVideos(int startIndex = 0, int count = 20)
         {
             try
             {
-                var videos = await _videoRepository.GetListOfVideos(startIndex, endIndex);
+                if (startIndex < 0) return StatusCode(StatusCodes.Status500InternalServerError, Resources.ErrIndexLessThanZero);
+
+                if (count <= 0) return StatusCode(StatusCodes.Status500InternalServerError, Resources.ErrCountLessOrEqualZero);
+
+                var videos = _videoRepository.GetListOfVideos(startIndex, count);
 
                 if (videos == null) return StatusCode(StatusCodes.Status500InternalServerError, Resources.ErrRetrieveDbOutOfRange);
 
