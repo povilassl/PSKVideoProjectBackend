@@ -189,5 +189,21 @@ namespace PSKVideoProjectBackend.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, Resources.ErrInsertToDB);
             }
         }
+
+        [HttpGet("GetCountOfAllVideos")]
+        public async Task<ActionResult<uint>> GetCountOfAllVideos()
+        {
+            try
+            {
+                var result = await _videoRepository.GetCountOfAllVideos();
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(Resources.Exception + " : " + ex.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError, Resources.ErrInsertToDB);
+            }
+        }
     }
 }
