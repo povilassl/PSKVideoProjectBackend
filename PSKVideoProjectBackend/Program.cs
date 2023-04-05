@@ -47,6 +47,8 @@ internal class Program
 
         var app = builder.Build();
 
+        AzureMediaManager.InitManager();
+
         app.UseCors();
 
         //enable swagger in both Debug and Release

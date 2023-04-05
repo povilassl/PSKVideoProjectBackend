@@ -141,16 +141,19 @@
   <data name="FillerComment" xml:space="preserve">
     <value>Comment</value>
   </data>
+  <data name="FillerURL" xml:space="preserve">
+    <value>URL</value>
+  </data>
   <data name="FillerVideoDescription" xml:space="preserve">
     <value>Video Description</value>
   </data>
   <data name="FillerVideoName" xml:space="preserve">
     <value>Video Name</value>
   </data>
-  <data name="FillerVideoURL" xml:space="preserve">
-    <value>Video URL</value>
-  </data>
   <data name="FillerVideoUsername" xml:space="preserve">
     <value>Username</value>
+  </data>
+  <data name="IncorrectImageFormat" xml:space="preserve">
+    <value>Thumbnail image has to be of either png or jpeg format.</value>
   </data>
 </root>
