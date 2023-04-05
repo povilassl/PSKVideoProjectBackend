@@ -87,5 +87,28 @@ namespace PSKVideoProjectBackend.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, Resources.ErrInsertToDB);
             }
         }
+
+        [HttpPost("TestingVideoUpload")]
+        public async Task<ActionResult<UploadedVideo>> TestingVideoUpload([FromForm] VideoToUpload video)
+        {
+            try
+            {
+                if (video.ThumbnailImage == null) return StatusCode(StatusCodes.Status400BadRequest, Resources.ErrNotAllInfo);
+
+                if (video.ThumbnailImage.ContentType != "image/jpeg" && video.ThumbnailImage.ContentType != "image/png")
+                    return StatusCode(StatusCodes.Status400BadRequest, Resources.IncorrectImageFormat);
+
+                var result = await _videoRepository.TestingVideoUpload(video);
+
+                if (result == null) return StatusCode(StatusCodes.Status500InternalServerError, Resources.ErrInsertToDB);
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(Resources.Exception + " : " + ex.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError, Resources.ErrInsertToDB);
+            }
+        }
     }
 }

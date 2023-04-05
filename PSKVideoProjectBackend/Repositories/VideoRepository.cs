@@ -169,5 +169,18 @@ namespace PSKVideoProjectBackend.Repositories
 
             return video;
         }
+
+        public async Task<UploadedVideo> TestingVideoUpload(VideoToUpload video)
+        {
+            var thumbnailURL = await AzureMediaManager.UploadThumbnailImage(video.ThumbnailImage);
+
+            if (String.IsNullOrEmpty(thumbnailURL)) return null!;
+
+            var uploaded = new UploadedVideo(video) {
+                ThumbnailURL = thumbnailURL,
+            };
+
+            return uploaded;
+        }
     }
 }

@@ -133,6 +133,15 @@ namespace PSKVideoProjectBackend.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to URL.
+        /// </summary>
+        public static string FillerURL {
+            get {
+                return ResourceManager.GetString("FillerURL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Video Description.
         /// </summary>
         public static string FillerVideoDescription {
@@ -151,20 +160,20 @@ namespace PSKVideoProjectBackend.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Video URL.
-        /// </summary>
-        public static string FillerVideoURL {
-            get {
-                return ResourceManager.GetString("FillerVideoURL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Username.
         /// </summary>
         public static string FillerVideoUsername {
             get {
                 return ResourceManager.GetString("FillerVideoUsername", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Thumbnail image has to be of either png or jpeg format..
+        /// </summary>
+        public static string IncorrectImageFormat {
+            get {
+                return ResourceManager.GetString("IncorrectImageFormat", resourceCulture);
             }
         }
     }
