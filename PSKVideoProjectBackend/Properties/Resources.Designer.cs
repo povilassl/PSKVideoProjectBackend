@@ -70,6 +70,15 @@ namespace PSKVideoProjectBackend.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Thumbnail image can not be larger than 1 Mb.
+        /// </summary>
+        public static string ErrImageTooLarge {
+            get {
+                return ResourceManager.GetString("ErrImageTooLarge", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to There was an error while inserting data into the database..
         /// </summary>
         public static string ErrInsertToDB {
@@ -111,6 +120,15 @@ namespace PSKVideoProjectBackend.Properties {
         public static string ErrVideoNotFoundById {
             get {
                 return ResourceManager.GetString("ErrVideoNotFoundById", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Video can not be larger than 10 Mb.
+        /// </summary>
+        public static string ErrVideoTooLarge {
+            get {
+                return ResourceManager.GetString("ErrVideoTooLarge", resourceCulture);
             }
         }
         
