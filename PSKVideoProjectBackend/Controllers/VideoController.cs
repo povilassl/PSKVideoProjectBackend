@@ -36,15 +36,30 @@ namespace PSKVideoProjectBackend.Controllers
 
         //Sitas dar neaisku, ar bus open, ar closed - bet kuriuo atveju kazkokia autetifikacija praverstu
         [HttpPost("UploadVideo")]
-        public async Task<ActionResult<UploadedVideo>> UploadVideo([FromBody] VideoToUpload video)
+        public async Task<ActionResult<UploadedVideo>> UploadVideo([FromForm] VideoToUpload video)
         {
             try
             {
-                var result = await _videoRepository.UploadVideo(video);
+                //all info checks
 
-                if (result == null) return StatusCode(StatusCodes.Status500InternalServerError, Resources.ErrInsertToDB);
+                if (String.IsNullOrEmpty(video.Username) || String.IsNullOrEmpty(video.VideoName) || String.IsNullOrEmpty(video.Description) ||
+                    video.VideoFile == null || video.ThumbnailImage == null)
+                    return StatusCode(StatusCodes.Status400BadRequest, Resources.ErrNotAllInfo);
 
-                return Ok(result);
+                if (video.ThumbnailImage.ContentType != "image/jpeg" && video.ThumbnailImage.ContentType != "image/png")
+                    return StatusCode(StatusCodes.Status400BadRequest, Resources.IncorrectImageFormat);
+
+                if (video.ThumbnailImage.Length > Math.Pow(10, 6)) //1 Mb
+                    return StatusCode(StatusCodes.Status400BadRequest, Resources.ErrImageTooLarge);
+
+                if (video.VideoFile.Length > 10 * Math.Pow(10, 6))// 10 Mb
+                    return StatusCode(StatusCodes.Status400BadRequest, Resources.ErrVideoTooLarge);
+
+                var res = await _videoRepository.UploadVideo(video);
+
+                if (res == null) return StatusCode(StatusCodes.Status500InternalServerError, Resources.ErrInsertToDB);
+
+                return Ok(res);
             }
             catch (Exception ex)
             {

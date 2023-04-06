@@ -32,12 +32,7 @@ namespace PSKVideoProjectBackend.Repositories
 
         public async Task<UploadedVideo> UploadVideo(VideoToUpload video)
         {
-            //TODO: cia reikia ikelt i az dar + gaut url ir length
-            var uploaded = new UploadedVideo(video);
-
-            var result = await _apiDbContext.UploadedVideos.AddAsync(uploaded);
-            await _apiDbContext.SaveChangesAsync();
-            return result.Entity;
+            return await AzureMediaManager.UploadVideo(_apiDbContext, video);
         }
 
         public async Task<UploadedVideo> UploadVideoTemp(UploadedVideo video)

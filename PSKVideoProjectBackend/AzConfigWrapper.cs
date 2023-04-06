@@ -1,4 +1,4 @@
-﻿namespace DemoVideoApplication
+﻿namespace PSKVideoProjectBackend
 {
     public class AzConfigWrapper
     {

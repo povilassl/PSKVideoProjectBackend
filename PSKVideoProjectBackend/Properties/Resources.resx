@@ -120,6 +120,9 @@
   <data name="ErrCommentNotFoundById" xml:space="preserve">
     <value>Comment with the supplied Id not found</value>
   </data>
+  <data name="ErrImageTooLarge" xml:space="preserve">
+    <value>Thumbnail image can not be larger than 1 Mb</value>
+  </data>
   <data name="ErrInsertToDB" xml:space="preserve">
     <value>There was an error while inserting data into the database.</value>
   </data>
@@ -134,6 +137,9 @@
   </data>
   <data name="ErrVideoNotFoundById" xml:space="preserve">
     <value>Video with the supplied Id not found </value>
+  </data>
+  <data name="ErrVideoTooLarge" xml:space="preserve">
+    <value>Video can not be larger than 10 Mb</value>
   </data>
   <data name="Exception" xml:space="preserve">
     <value>Exception</value>
