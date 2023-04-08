@@ -41,7 +41,7 @@ namespace PSKVideoProjectBackend.Models
             Username = videoToUpload.Username;
             Description = videoToUpload.Description;
 
-            //TODO: finish: url + length
+            Id = 0;
             VideoURL = "";
             ThumbnailURL = "";
             VideoLengthInSeconds = 0;

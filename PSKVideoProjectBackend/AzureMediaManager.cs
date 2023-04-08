@@ -10,17 +10,21 @@ using Microsoft.Azure.Management.Media;
 using Microsoft.Azure.Management.Media.Models;
 using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using Microsoft.Extensions.Azure;
 using Microsoft.IdentityModel.Clients.ActiveDirectory;
 using Microsoft.Rest.Azure.Authentication;
 using PSKVideoProjectBackend.Models;
 using PSKVideoProjectBackend.Properties;
+using PSKVideoProjectBackend.Repositories;
+using System;
 using System.Diagnostics;
 
 namespace PSKVideoProjectBackend
 {
     public static class AzureMediaManager
     {
-        //public static IAzureMediaServicesClient _client = null;
+        private static ILogger<VideoRepository> _logger;
+
         public static AzConfigWrapper? _mediaConfig = null;
         public static IAzureMediaServicesClient? _mediaClient = null;
         public static MediaServicesAccountResource? _mediaServicesAccount = null;
@@ -38,8 +42,8 @@ namespace PSKVideoProjectBackend
             {
                 //setting up config for thumbnail blob client and container
                 var builder = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
+                        .SetBasePath(Directory.GetCurrentDirectory())
+                        .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
 
                 var configuration = builder.Build();
                 string connectionString = configuration.GetConnectionString("ThumbnailBlobStorageConnectionString")!;
@@ -59,8 +63,6 @@ namespace PSKVideoProjectBackend
 
                 IAzureMediaServicesClient client = await CreateMediaServicesClientAsync(config);
 
-                Console.WriteLine("connected");
-
                 _mediaClient = client;
                 _mediaConfig = config;
             }
@@ -68,16 +70,16 @@ namespace PSKVideoProjectBackend
             {
                 if (exception.Source.Contains("ActiveDirectory"))
                 {
-                    Console.Error.WriteLine("TIP: Make sure that you have filled out the appsettings.json file before running this sample.");
+                    Console.WriteLine("TIP: Make sure that you have filled out the appsettings.json file before running this sample.");
                 }
-
-                Console.Error.WriteLine(exception.Message);
 
                 if (exception.GetBaseException() is ErrorResponseException apiException)
                 {
-                    Console.Error.WriteLine(
-                        $"ERROR: API call failed with error code '{apiException.Body.Error.Code}' and message '{apiException.Body.Error.Message}'.");
+                    Console.WriteLine(
+                        $"API call failed with error code '{apiException.Body.Error.Code}' and message '{apiException.Body.Error.Message}'.");
                 }
+
+                throw;
             }
 
             try
@@ -97,8 +99,10 @@ namespace PSKVideoProjectBackend
             }
             catch (Exception e)
             {
-                Console.Error.WriteLine("ERROR: could not create Media Services Account or Video Transform");
-                Console.Error.WriteLine("Exception: " + e.Message);
+                Console.WriteLine("Could not create Media Services Account or Video Transform");
+                Console.WriteLine("Error: " + e.Message);
+
+                throw;
             }
         }
 
@@ -118,8 +122,6 @@ namespace PSKVideoProjectBackend
         // output is set to encode a video using a custom preset.
         static async Task<MediaTransformResource> CreateTransformAsync(MediaServicesAccountResource mediaServicesAccount, string transformName)
         {
-            Console.WriteLine("Creating a Transform...");
-
             // Create the custom Transform with the outputs defined above
             // Does a Transform already exist with the desired name? This method will just overwrite (Update) the Transform if it exists already. 
             // In production code, you may want to be cautious about that. It really depends on your scenario.
@@ -134,10 +136,12 @@ namespace PSKVideoProjectBackend
             return transform.Value;
         }
 
-        public static async Task<UploadedVideo> UploadVideo(ApiDbContext apiDbContext, VideoToUpload videoToUpload)
+        public static async Task<UploadedVideo> UploadVideo(ILogger<VideoRepository> logger, ApiDbContext apiDbContext, VideoToUpload videoToUpload)
         {
             try
             {
+                _logger = logger;
+
                 var videoFile = videoToUpload.VideoFile;
 
                 string InputMP4FileName = videoFile.FileName;
@@ -163,12 +167,10 @@ namespace PSKVideoProjectBackend
                 //Upload thumbnail
                 var thumbnailUrl = await UploadThumbnailImage(videoToUpload.ThumbnailImage);
 
-                //var duration = GetMP4DurationInSeconds(videoFile);
 
                 var uploaded = new UploadedVideo(videoToUpload) {
                     ThumbnailURL = thumbnailUrl,
-                    VideoURL = streamUrl,
-                    VideoLengthInSeconds = 0
+                    VideoURL = streamUrl
                 };
 
                 var res = await apiDbContext.UploadedVideos.AddAsync(uploaded);
@@ -180,51 +182,9 @@ namespace PSKVideoProjectBackend
             }
             catch (Exception ex)
             {
-                Trace.WriteLine(Resources.Exception + ex.Message);
+                _logger.LogError(ex.Message);
                 return null;
             }
-        }
-
-        public static uint GetMP4DurationInSeconds(IFormFile videoFile)
-        {
-            var fileInfo = new FileInfo(videoFile.FileName);
-            var tempFilePath = Path.GetTempPath() + Guid.NewGuid().ToString() + fileInfo.Extension;
-            double durationInSeconds = 0;
-
-            try
-            {
-                using (var fileStream = new FileStream(tempFilePath, FileMode.Create))
-                {
-                    videoFile.CopyTo(fileStream);
-                }
-
-                var ffmpegProcess = new Process {
-                    StartInfo =
-                    {
-                        FileName = "ffmpeg",
-                        Arguments = $"-i \"{tempFilePath}\" -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1",
-                        RedirectStandardOutput = true,
-                        UseShellExecute = false,
-                        CreateNoWindow = true
-                    }
-                };
-
-                ffmpegProcess.Start();
-
-                var output = ffmpegProcess.StandardOutput.ReadToEnd();
-                double.TryParse(output, out durationInSeconds);
-
-                ffmpegProcess.WaitForExit();
-            }
-            finally
-            {
-                if (File.Exists(tempFilePath))
-                {
-                    File.Delete(tempFilePath);
-                }
-            }
-
-            return Convert.ToUInt32(durationInSeconds);
         }
 
         private static async Task<string> ContinueRunningJobInBackground(
@@ -233,15 +193,13 @@ namespace PSKVideoProjectBackend
         {
             try
             {
-
-
-                Console.WriteLine("Polling Job status...");
+                _logger.LogInformation("Polling Job status...");
                 job = await WaitForJobToFinishAsync(job);
 
                 if (job.Data.State == MediaJobState.Error)
                 {
-                    Console.WriteLine($"ERROR: Job finished with error message: {job.Data.Outputs[0].Error.Message}");
-                    Console.WriteLine($"ERROR:                   error details: {job.Data.Outputs[0].Error.Details[0].Message}");
+                    _logger.LogError($"Job finished with error message: {job.Data.Outputs[0].Error.Message}");
+                    _logger.LogError($"                  error details: {job.Data.Outputs[0].Error.Details[0].Message}");
                     await CleanUpAsync(_videoTransform!, job, inputAsset, outputAsset);
                     return null;
                 }
@@ -249,22 +207,20 @@ namespace PSKVideoProjectBackend
                 var streamingLocator = await CreateStreamingLocatorAsync(_mediaServicesAccount, outputAsset.Data.Name, locatorName);
                 var streamingEndpoint = (await _mediaServicesAccount.GetStreamingEndpoints().GetAsync(_streamingEndpointName)).Value;
 
-                Console.WriteLine();
-                Console.WriteLine("Getting the streaming manifest URLs for HLS and DASH:");
+                _logger.LogInformation("Getting the streaming manifest URLs for HLS and DASH:");
                 var streamingUrl = await GetStreamingUrlAsync(streamingLocator, streamingEndpoint);
 
                 return streamingUrl;
 
-
             }
             catch (Exception ex)
             {
-                Trace.WriteLine(Resources.Exception + ex.Message);
+                _logger.LogError(ex.Message);
                 return null;
             }
         }
 
-        private async static Task<string> GetStreamingUrlAsync(StreamingLocatorResource locator, StreamingEndpointResource streamingEndpoint)
+        private static async Task<string> GetStreamingUrlAsync(StreamingLocatorResource locator, StreamingEndpointResource streamingEndpoint)
         {
             try
             {
@@ -287,13 +243,13 @@ namespace PSKVideoProjectBackend
             }
             catch (Exception ex)
             {
-                Trace.WriteLine(Resources.Exception + ex.Message);
+                _logger.LogError(ex.Message);
                 return null;
             }
         }
 
-        static async Task<MediaAssetResource> CreateInputAssetAsync(
-            MediaServicesAccountResource mediaServicesAccount, string assetName, IFormFile videoFile)
+        async static Task<MediaAssetResource> CreateInputAssetAsync(
+           MediaServicesAccountResource mediaServicesAccount, string assetName, IFormFile videoFile)
         {
             // We are assuming that the Asset name is unique.
             MediaAssetResource asset;
@@ -304,49 +260,42 @@ namespace PSKVideoProjectBackend
 
                 // The Asset already exists and we are going to overwrite it. In your application, if you don't want to overwrite
                 // an existing Asset, use an unique name.
-                Console.WriteLine($"Warning: The Asset named {assetName} already exists. It will be overwritten.");
+                _logger.LogWarning($"The Asset named {assetName} already exists. It will be overwritten.");
             }
             catch (RequestFailedException)
             {
                 // Call Media Services API to create an Asset.
                 // This method creates a container in storage for the Asset.
                 // The files (blobs) associated with the Asset will be stored in this container.
-                Console.WriteLine("Creating an input Asset...");
+                _logger.LogInformation("Creating an input Asset...");
                 asset = (await mediaServicesAccount.GetMediaAssets().CreateOrUpdateAsync(WaitUntil.Completed, assetName, new MediaAssetData())).Value;
             }
 
-            // Use Media Services API to get back a response that contains
-            // SAS URL for the Asset container into which to upload blobs.
-            // That is where you would specify read-write permissions
-            // and the expiration time for the SAS URL.
-            var sasUriCollection = asset.GetStorageContainerUrisAsync(
-                new MediaAssetStorageContainerSasContent {
-                    Permissions = MediaAssetContainerPermission.ReadWrite,
-                    ExpireOn = DateTime.UtcNow.AddHours(1)
-                });
-
-            var sasUri = await sasUriCollection.FirstOrDefaultAsync();
-
-            // Use Storage API to get a reference to the Asset container
-            // that was created by calling Asset's CreateOrUpdate method.
-            var container = new BlobContainerClient(sasUri);
-            BlobClient blobClient = container.GetBlobClient(videoFile.FileName);
-
-            // Use Storage API to upload the file into the container in storage.
-            using (var memoryStream = new MemoryStream())
+            try
             {
-                try
-                {
-                    videoFile.CopyTo(memoryStream);
-                    memoryStream.Position = 0;
+                // Use Media Services API to get back a response that contains
+                // SAS URL for the Asset container into which to upload blobs.
+                // That is where you would specify read-write permissions
+                // and the expiration time for the SAS URL.
+                var sasUriCollection = asset.GetStorageContainerUrisAsync(
+                    new MediaAssetStorageContainerSasContent {
+                        Permissions = MediaAssetContainerPermission.ReadWrite,
+                        ExpireOn = DateTime.UtcNow.AddHours(1)
+                    });
 
-                    await blobClient.UploadAsync(memoryStream, new BlobHttpHeaders { ContentType = videoFile.ContentType });
-                }
-                catch (Exception ex)
-                {
-                    Trace.WriteLine(ex);
-                    return null!;
-                }
+                var sasUri = await sasUriCollection.FirstOrDefaultAsync();
+
+                // Use Storage API to get a reference to the Asset container
+                // that was created by calling Asset's CreateOrUpdate method.
+                var container = new BlobContainerClient(sasUri);
+                BlobClient blobClient = container.GetBlobClient(videoFile.FileName);
+
+                await blobClient.UploadAsync(videoFile.OpenReadStream(), new BlobHttpHeaders { ContentType = videoFile.ContentType });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return null;
             }
 
             return asset;
@@ -354,9 +303,9 @@ namespace PSKVideoProjectBackend
 
 
         // Creates an output Asset. The output from the encoding Job must be written to an Asset.
-        static async Task<MediaAssetResource> CreateOutputAssetAsync(MediaServicesAccountResource mediaServicesAccount, string assetName)
+        async static Task<MediaAssetResource> CreateOutputAssetAsync(MediaServicesAccountResource mediaServicesAccount, string assetName)
         {
-            Console.WriteLine("Creating an output Asset...");
+            _logger.LogInformation("Creating an output Asset...");
             var asset = await mediaServicesAccount.GetMediaAssets().CreateOrUpdateAsync(
                 WaitUntil.Completed,
                 assetName,
@@ -371,12 +320,9 @@ namespace PSKVideoProjectBackend
         {
             try
             {
-                // In this example, we are assuming that the Job name is unique.
-                //
-                // If you already have a Job with the desired name, use the Jobs.Get method
-                // to get the existing Job. In Media Services v3, Get methods on entities returns ErrorResponseException 
-                // if the entity doesn't exist (a case-insensitive check on the name).
-                Console.WriteLine("Creating a Job...");
+                // We are assuming that the Job name is unique.
+                _logger.LogInformation("Creating a Job...");
+
                 var job = await transform.GetMediaJobs().CreateOrUpdateAsync(
                     WaitUntil.Completed,
                     jobName,
@@ -389,7 +335,7 @@ namespace PSKVideoProjectBackend
             }
             catch (Exception ex)
             {
-                Trace.WriteLine(Resources.Exception + ex.Message);
+                _logger.LogError(ex.Message);
                 return null;
             }
 
@@ -408,17 +354,15 @@ namespace PSKVideoProjectBackend
                     job = await job.GetAsync();
                     state = job.Data.State.GetValueOrDefault();
 
-                    Console.WriteLine($"Job is '{state}'.");
+                    _logger.LogInformation($"Job is '{state}'.");
                     for (int i = 0; i < job.Data.Outputs.Count; i++)
                     {
                         var output = job.Data.Outputs[i];
-                        Console.Write($"\tJobOutput[{i}] is '{output.State}'.");
+                        _logger.LogInformation($"\tJobOutput[{i}] is '{output.State}'.");
                         if (output.State == MediaJobState.Processing)
                         {
-                            Console.Write($"  Progress: '{output.Progress}'.");
+                            _logger.LogInformation($"  Progress: '{output.Progress}'.");
                         }
-
-                        Console.WriteLine();
                     }
 
                     if (state != MediaJobState.Finished && state != MediaJobState.Error && state != MediaJobState.Canceled)
@@ -432,7 +376,7 @@ namespace PSKVideoProjectBackend
             }
             catch (Exception ex)
             {
-                Trace.WriteLine(Resources.Exception + ex.Message);
+                _logger.LogError(ex.Message);
                 return null;
             }
 
@@ -453,7 +397,7 @@ namespace PSKVideoProjectBackend
             }
             catch (Exception ex)
             {
-                Trace.WriteLine(Resources.Exception + ex.Message);
+                _logger.LogError(ex.Message);
             }
 
         }
@@ -467,8 +411,6 @@ namespace PSKVideoProjectBackend
         {
             try
             {
-
-
                 var locator = await mediaServicesAccount.GetStreamingLocators().CreateOrUpdateAsync(
                     WaitUntil.Completed,
                     locatorName,
@@ -482,13 +424,12 @@ namespace PSKVideoProjectBackend
             }
             catch (Exception ex)
             {
-                Trace.WriteLine(Resources.Exception + ex.Message);
+                _logger.LogError(ex.Message);
                 return null;
             }
         }
 
-
-        public static async Task<string> UploadThumbnailImage(IFormFile image)
+        static async Task<string> UploadThumbnailImage(IFormFile image)
         {
             Response<BlobContentInfo> response;
 
@@ -509,7 +450,7 @@ namespace PSKVideoProjectBackend
                 }
                 catch (Exception ex)
                 {
-                    Trace.WriteLine(ex);
+                    _logger.LogError(ex.Message);
                     return null!;
                 }
 
