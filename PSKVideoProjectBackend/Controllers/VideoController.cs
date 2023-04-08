@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using PSKVideoProjectBackend.Models;
 using PSKVideoProjectBackend.Properties;
 using PSKVideoProjectBackend.Repositories;
+using System.Diagnostics;
 
 namespace PSKVideoProjectBackend.Controllers
 {
@@ -10,10 +11,12 @@ namespace PSKVideoProjectBackend.Controllers
     public class VideoController : ControllerBase
     {
         private readonly VideoRepository _videoRepository;
+        private readonly ILogger<VideoController> _logger;
 
-        public VideoController(VideoRepository videoRepository)
+        public VideoController(VideoRepository videoRepository, ILogger<VideoController> logger)
         {
             _videoRepository = videoRepository;
+            _logger = logger;
         }
 
         [HttpGet("GetListOfVideos")]
@@ -29,7 +32,7 @@ namespace PSKVideoProjectBackend.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine(Resources.Exception + " : " + ex.Message);
+                _logger.LogError(ex.Message);
                 return StatusCode(StatusCodes.Status500InternalServerError, Resources.ErrRetrieveFromDB);
             }
         }
@@ -63,7 +66,7 @@ namespace PSKVideoProjectBackend.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine(Resources.Exception + " : " + ex.Message);
+                _logger.LogError(ex.Message);
                 return StatusCode(StatusCodes.Status500InternalServerError, Resources.ErrInsertToDB);
             }
         }
@@ -98,30 +101,7 @@ namespace PSKVideoProjectBackend.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine(Resources.Exception + " : " + ex.Message);
-                return StatusCode(StatusCodes.Status500InternalServerError, Resources.ErrInsertToDB);
-            }
-        }
-
-        [HttpPost("TestingVideoUpload")]
-        public async Task<ActionResult<UploadedVideo>> TestingVideoUpload([FromForm] VideoToUpload video)
-        {
-            try
-            {
-                if (video.ThumbnailImage == null) return StatusCode(StatusCodes.Status400BadRequest, Resources.ErrNotAllInfo);
-
-                if (video.ThumbnailImage.ContentType != "image/jpeg" && video.ThumbnailImage.ContentType != "image/png")
-                    return StatusCode(StatusCodes.Status400BadRequest, Resources.IncorrectImageFormat);
-
-                var result = await _videoRepository.TestingVideoUpload(video);
-
-                if (result == null) return StatusCode(StatusCodes.Status500InternalServerError, Resources.ErrInsertToDB);
-
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(Resources.Exception + " : " + ex.Message);
+                _logger.LogError(ex.Message);
                 return StatusCode(StatusCodes.Status500InternalServerError, Resources.ErrInsertToDB);
             }
         }
