@@ -22,8 +22,8 @@ internal class Program
             options.AddDefaultPolicy(
                 builder => {
                     builder.AllowAnyOrigin()
-                                     .AllowAnyMethod()
-                                     .AllowAnyHeader();
+                        .AllowAnyMethod()
+                        .AllowAnyHeader();
                 });
         });
 
