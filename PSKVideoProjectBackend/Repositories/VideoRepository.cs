@@ -19,7 +19,7 @@ namespace PSKVideoProjectBackend.Repositories
             _logger = logger;
         }
 
-        public async Task<IEnumerable<UploadedVideo>>? GetListOfVideos(int startIndex, int count)
+        public IEnumerable<UploadedVideo>? GetListOfVideos(int startIndex, int count)
         {
             var allVideos = _apiDbContext.UploadedVideos.ToList();
 
@@ -170,12 +170,19 @@ namespace PSKVideoProjectBackend.Repositories
 
             if (video == null) return null!;
 
-            if (video.ViewCount != uint.MaxValue) video.ViewCount++;
+            if (video.ViewCount == uint.MaxValue) return video;
+
+            video.ViewCount++;
 
             _apiDbContext.UploadedVideos.Update(video);
             await _apiDbContext.SaveChangesAsync();
 
             return video;
+        }
+
+        public async Task<int> GetCountOfAllVideos()
+        {
+            return await _apiDbContext.UploadedVideos.CountAsync();
         }
     }
 }
