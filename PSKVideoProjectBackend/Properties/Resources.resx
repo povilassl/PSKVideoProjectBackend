@@ -122,6 +122,7 @@
   </data>
   <data name="ErrImageTooLarge" xml:space="preserve">
     <value>Thumbnail image can not be larger than 1 Mb</value>
+  </data>
   <data name="ErrCountLessOrEqualZero" xml:space="preserve">
     <value>Error: 'count' can not be less or equal to 0</value>
   </data>

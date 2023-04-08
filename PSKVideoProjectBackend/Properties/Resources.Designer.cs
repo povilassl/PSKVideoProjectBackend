@@ -70,16 +70,20 @@ namespace PSKVideoProjectBackend.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Thumbnail image can not be larger than 1 Mb.
-        /// </summary>
-        public static string ErrImageTooLarge {
-            get {
-                return ResourceManager.GetString("ErrImageTooLarge", resourceCulture);
         ///   Looks up a localized string similar to Error: &apos;count&apos; can not be less or equal to 0.
         /// </summary>
         public static string ErrCountLessOrEqualZero {
             get {
                 return ResourceManager.GetString("ErrCountLessOrEqualZero", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Thumbnail image can not be larger than 1 Mb.
+        /// </summary>
+        public static string ErrImageTooLarge {
+            get {
+                return ResourceManager.GetString("ErrImageTooLarge", resourceCulture);
             }
         }
         

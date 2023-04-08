@@ -13,6 +13,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.Extensions.Azure;
 using Microsoft.IdentityModel.Clients.ActiveDirectory;
 using Microsoft.Rest.Azure.Authentication;
+using NReco.VideoInfo;
 using PSKVideoProjectBackend.Models;
 using PSKVideoProjectBackend.Properties;
 using PSKVideoProjectBackend.Repositories;
@@ -155,7 +156,10 @@ namespace PSKVideoProjectBackend
                 string outputAssetName = $"output-{InputMP4FileName}-{uniqueness}";
 
                 // Create a new input Asset and upload the specified local video file into it.
-                var inputAsset = await CreateInputAssetAsync(_mediaServicesAccount, inputAssetName, videoFile);
+                var assetAndDuration = await CreateInputAssetAsync(_mediaServicesAccount, inputAssetName, videoFile);
+
+                var inputAsset = assetAndDuration.Item1;
+                var duration = assetAndDuration.Item2;
 
                 // Output from the Job must be written to an Asset, so let's create one.
                 var outputAsset = await CreateOutputAssetAsync(_mediaServicesAccount, outputAssetName);
@@ -170,7 +174,8 @@ namespace PSKVideoProjectBackend
 
                 var uploaded = new UploadedVideo(videoToUpload) {
                     ThumbnailURL = thumbnailUrl,
-                    VideoURL = streamUrl
+                    VideoURL = streamUrl,
+                    VideoDurationInSeconds = duration,
                 };
 
                 var res = await apiDbContext.UploadedVideos.AddAsync(uploaded);
@@ -248,11 +253,16 @@ namespace PSKVideoProjectBackend
             }
         }
 
-        async static Task<MediaAssetResource> CreateInputAssetAsync(
+        async static Task<Tuple<MediaAssetResource, uint>> CreateInputAssetAsync(
            MediaServicesAccountResource mediaServicesAccount, string assetName, IFormFile videoFile)
         {
             // We are assuming that the Asset name is unique.
             MediaAssetResource asset;
+            uint duration;
+
+            string fileName = DateTime.Now.ToString("yyyyMMddHHmmssfff") + "_" + videoFile.FileName;
+            string tempFolder = Path.GetTempPath();
+            string tempFilePath = Path.Combine(tempFolder, fileName);
 
             try
             {
@@ -291,14 +301,28 @@ namespace PSKVideoProjectBackend
                 BlobClient blobClient = container.GetBlobClient(videoFile.FileName);
 
                 await blobClient.UploadAsync(videoFile.OpenReadStream(), new BlobHttpHeaders { ContentType = videoFile.ContentType });
+
+                //Save temp file to get duration of mp4
+                using (var stream = new FileStream(tempFilePath, FileMode.Create))
+                {
+                    videoFile.CopyTo(stream);
+                }
+
+                var ffProbe = new FFProbe();
+                var videoInfo = ffProbe.GetMediaInfo(tempFilePath);
+                duration = (uint)videoInfo.Duration.TotalSeconds;
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex.Message);
                 return null;
             }
+            finally
+            {
+                if (File.Exists(tempFilePath)) File.Delete(tempFilePath);
+            }
 
-            return asset;
+            return Tuple.Create(asset, duration);
         }
 
 
