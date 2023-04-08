@@ -122,6 +122,11 @@
   </data>
   <data name="ErrImageTooLarge" xml:space="preserve">
     <value>Thumbnail image can not be larger than 1 Mb</value>
+  <data name="ErrCountLessOrEqualZero" xml:space="preserve">
+    <value>Error: 'count' can not be less or equal to 0</value>
+  </data>
+  <data name="ErrIndexLessThanZero" xml:space="preserve">
+    <value>Error: index can not be less than 0</value>
   </data>
   <data name="ErrInsertToDB" xml:space="preserve">
     <value>There was an error while inserting data into the database.</value>
