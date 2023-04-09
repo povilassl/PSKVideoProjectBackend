@@ -9,8 +9,9 @@ namespace PSKVideoProjectBackend.Models
         [Key]
         public uint Id { get; set; }
         public String VideoName { get; set; }
-        public String URL { get; set; }
-        public uint VideoLengthInSeconds { get; set; }
+        public String VideoURL { get; set; }
+        public String ThumbnailURL { get; set; }
+        public uint VideoDurationInSeconds { get; set; }
         public DateTime UploadDateTime { get; set; }
         public uint LikeCount { get; set; }
         public uint DislikeCount { get; set; }
@@ -22,8 +23,9 @@ namespace PSKVideoProjectBackend.Models
         public UploadedVideo()
         {
             VideoName = Resources.FillerVideoName;
-            URL = Resources.FillerVideoURL;
-            VideoLengthInSeconds = 0;
+            VideoURL = Resources.FillerURL;
+            ThumbnailURL = Resources.FillerURL;
+            VideoDurationInSeconds = 0;
             UploadDateTime = DateTime.Now;
             LikeCount = 0;
             DislikeCount = 0;
@@ -39,9 +41,9 @@ namespace PSKVideoProjectBackend.Models
             Username = videoToUpload.Username;
             Description = videoToUpload.Description;
 
-            //TODO: finish: url + length
-            URL = "";
-            VideoLengthInSeconds = 0;
+            Id = 0;
+            VideoURL = "";
+            ThumbnailURL = "";
             UploadDateTime = DateTime.Now;
             LikeCount = 0;
             DislikeCount = 0;

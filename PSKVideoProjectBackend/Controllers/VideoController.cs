@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using PSKVideoProjectBackend.Models;
 using PSKVideoProjectBackend.Properties;
 using PSKVideoProjectBackend.Repositories;
+using System.Diagnostics;
 
 namespace PSKVideoProjectBackend.Controllers
 {
@@ -10,10 +11,12 @@ namespace PSKVideoProjectBackend.Controllers
     public class VideoController : ControllerBase
     {
         private readonly VideoRepository _videoRepository;
+        private readonly ILogger<VideoController> _logger;
 
-        public VideoController(VideoRepository videoRepository)
+        public VideoController(VideoRepository videoRepository, ILogger<VideoController> logger)
         {
             _videoRepository = videoRepository;
+            _logger = logger;
         }
 
         [HttpGet("GetListOfVideos")]
@@ -33,26 +36,41 @@ namespace PSKVideoProjectBackend.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine(Resources.Exception + " : " + ex.Message);
+                _logger.LogError(ex.Message);
                 return StatusCode(StatusCodes.Status500InternalServerError, Resources.ErrRetrieveFromDB);
             }
         }
 
         //Sitas dar neaisku, ar bus open, ar closed - bet kuriuo atveju kazkokia autetifikacija praverstu
         [HttpPost("UploadVideo")]
-        public async Task<ActionResult<UploadedVideo>> UploadVideo([FromBody] VideoToUpload video)
+        public async Task<ActionResult<UploadedVideo>> UploadVideo([FromForm] VideoToUpload video)
         {
             try
             {
-                var result = await _videoRepository.UploadVideo(video);
+                //all info checks
 
-                if (result == null) return StatusCode(StatusCodes.Status500InternalServerError, Resources.ErrInsertToDB);
+                if (String.IsNullOrEmpty(video.Username) || String.IsNullOrEmpty(video.VideoName) || String.IsNullOrEmpty(video.Description) ||
+                    video.VideoFile == null || video.ThumbnailImage == null)
+                    return StatusCode(StatusCodes.Status400BadRequest, Resources.ErrNotAllInfo);
 
-                return Ok(result);
+                if (video.ThumbnailImage.ContentType != "image/jpeg" && video.ThumbnailImage.ContentType != "image/png")
+                    return StatusCode(StatusCodes.Status400BadRequest, Resources.IncorrectImageFormat);
+
+                if (video.ThumbnailImage.Length > Math.Pow(10, 6)) //1 Mb
+                    return StatusCode(StatusCodes.Status400BadRequest, Resources.ErrImageTooLarge);
+
+                if (video.VideoFile.Length > 10 * Math.Pow(10, 6))// 10 Mb
+                    return StatusCode(StatusCodes.Status400BadRequest, Resources.ErrVideoTooLarge);
+
+                var res = await _videoRepository.UploadVideo(video);
+
+                if (res == null) return StatusCode(StatusCodes.Status500InternalServerError, Resources.ErrInsertToDB);
+
+                return Ok(res);
             }
             catch (Exception ex)
             {
-                Console.WriteLine(Resources.Exception + " : " + ex.Message);
+                _logger.LogError(ex.Message);
                 return StatusCode(StatusCodes.Status500InternalServerError, Resources.ErrInsertToDB);
             }
         }
@@ -87,7 +105,7 @@ namespace PSKVideoProjectBackend.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine(Resources.Exception + " : " + ex.Message);
+                _logger.LogError(ex.Message);
                 return StatusCode(StatusCodes.Status500InternalServerError, Resources.ErrInsertToDB);
             }
         }

@@ -79,6 +79,15 @@ namespace PSKVideoProjectBackend.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Thumbnail image can not be larger than 1 Mb.
+        /// </summary>
+        public static string ErrImageTooLarge {
+            get {
+                return ResourceManager.GetString("ErrImageTooLarge", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Error: index can not be less than 0.
         /// </summary>
         public static string ErrIndexLessThanZero {
@@ -133,6 +142,15 @@ namespace PSKVideoProjectBackend.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Video can not be larger than 10 Mb.
+        /// </summary>
+        public static string ErrVideoTooLarge {
+            get {
+                return ResourceManager.GetString("ErrVideoTooLarge", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Exception.
         /// </summary>
         public static string Exception {
@@ -147,6 +165,15 @@ namespace PSKVideoProjectBackend.Properties {
         public static string FillerComment {
             get {
                 return ResourceManager.GetString("FillerComment", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to URL.
+        /// </summary>
+        public static string FillerURL {
+            get {
+                return ResourceManager.GetString("FillerURL", resourceCulture);
             }
         }
         
@@ -169,20 +196,20 @@ namespace PSKVideoProjectBackend.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Video URL.
-        /// </summary>
-        public static string FillerVideoURL {
-            get {
-                return ResourceManager.GetString("FillerVideoURL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Username.
         /// </summary>
         public static string FillerVideoUsername {
             get {
                 return ResourceManager.GetString("FillerVideoUsername", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Thumbnail image has to be of either png or jpeg format..
+        /// </summary>
+        public static string IncorrectImageFormat {
+            get {
+                return ResourceManager.GetString("IncorrectImageFormat", resourceCulture);
             }
         }
     }
