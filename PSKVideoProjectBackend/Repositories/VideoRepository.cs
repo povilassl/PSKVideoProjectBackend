@@ -1,17 +1,22 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Azure.Management.Media.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using PSKVideoProjectBackend.Models;
+using PSKVideoProjectBackend.Properties;
+using System.Diagnostics;
 
 namespace PSKVideoProjectBackend.Repositories
 {
     public class VideoRepository
     {
         private readonly ApiDbContext _apiDbContext;
+        private readonly ILogger<VideoRepository> _logger;
 
-        public VideoRepository(ApiDbContext apiDbContext)
+        public VideoRepository(ApiDbContext apiDbContext, ILogger<VideoRepository> logger)
         {
             _apiDbContext = apiDbContext;
+            _logger = logger;
         }
 
         public IEnumerable<UploadedVideo>? GetListOfVideos(int startIndex, int count)
@@ -32,12 +37,15 @@ namespace PSKVideoProjectBackend.Repositories
 
         public async Task<UploadedVideo> UploadVideo(VideoToUpload video)
         {
-            //TODO: cia reikia ikelt i az dar + gaut url ir length
-            var uploaded = new UploadedVideo(video);
-
-            var result = await _apiDbContext.UploadedVideos.AddAsync(uploaded);
-            await _apiDbContext.SaveChangesAsync();
-            return result.Entity;
+            try
+            {
+                return await AzureMediaManager.UploadVideo(_logger, _apiDbContext, video);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return null!;
+            }
         }
 
         public async Task<UploadedVideo> UploadVideoTemp(UploadedVideo video)

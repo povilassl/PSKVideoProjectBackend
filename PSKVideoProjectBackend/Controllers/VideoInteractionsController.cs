@@ -10,10 +10,12 @@ namespace PSKVideoProjectBackend.Controllers
     public class VideoInteractionsController : ControllerBase
     {
         private readonly VideoRepository _videoRepository;
+        private readonly ILogger<VideoInteractionsController> _logger;
 
-        public VideoInteractionsController(VideoRepository videoRepository)
+        public VideoInteractionsController(VideoRepository videoRepository, ILogger<VideoInteractionsController> logger)
         {
             _videoRepository = videoRepository;
+            _logger = logger;
         }
 
         [HttpPost("AddLike")]
@@ -29,7 +31,7 @@ namespace PSKVideoProjectBackend.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine(Resources.Exception + " : " + ex.Message);
+                _logger.LogError(ex.Message);
                 return StatusCode(StatusCodes.Status500InternalServerError, Resources.ErrInsertToDB);
             }
         }
@@ -47,7 +49,7 @@ namespace PSKVideoProjectBackend.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine(Resources.Exception + " : " + ex.Message);
+                _logger.LogError(ex.Message);
                 return StatusCode(StatusCodes.Status500InternalServerError, Resources.ErrInsertToDB);
             }
         }
@@ -65,7 +67,7 @@ namespace PSKVideoProjectBackend.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine(Resources.Exception + " : " + ex.Message);
+                _logger.LogError(ex.Message);
                 return StatusCode(StatusCodes.Status500InternalServerError, Resources.ErrInsertToDB);
             }
         }
@@ -83,7 +85,7 @@ namespace PSKVideoProjectBackend.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine(Resources.Exception + " : " + ex.Message);
+                _logger.LogError(ex.Message);
                 return StatusCode(StatusCodes.Status500InternalServerError, Resources.ErrInsertToDB);
             }
         }
@@ -110,7 +112,7 @@ namespace PSKVideoProjectBackend.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine(Resources.Exception + " : " + ex.Message);
+                _logger.LogError(ex.Message);
                 return StatusCode(StatusCodes.Status500InternalServerError, Resources.ErrInsertToDB);
             }
         }
@@ -135,7 +137,7 @@ namespace PSKVideoProjectBackend.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine(Resources.Exception + " : " + ex.Message);
+                _logger.LogError(ex.Message);
                 return StatusCode(StatusCodes.Status500InternalServerError, Resources.ErrInsertToDB);
             }
         }
@@ -151,7 +153,7 @@ namespace PSKVideoProjectBackend.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine(Resources.Exception + " : " + ex.Message);
+                _logger.LogError(ex.Message);
                 return StatusCode(StatusCodes.Status500InternalServerError, Resources.ErrInsertToDB);
             }
         }
@@ -167,7 +169,7 @@ namespace PSKVideoProjectBackend.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine(Resources.Exception + " : " + ex.Message);
+                _logger.LogError(ex.Message);
                 return StatusCode(StatusCodes.Status500InternalServerError, Resources.ErrInsertToDB);
             }
         }
@@ -185,7 +187,7 @@ namespace PSKVideoProjectBackend.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine(Resources.Exception + " : " + ex.Message);
+                _logger.LogError(ex.Message);
                 return StatusCode(StatusCodes.Status500InternalServerError, Resources.ErrInsertToDB);
             }
         }
