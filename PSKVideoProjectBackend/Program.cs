@@ -22,8 +22,8 @@ internal class Program
             options.AddDefaultPolicy(
                 builder => {
                     builder.AllowAnyOrigin()
-                                     .AllowAnyMethod()
-                                     .AllowAnyHeader();
+                        .AllowAnyMethod()
+                        .AllowAnyHeader();
                 });
         });
 
@@ -46,6 +46,8 @@ internal class Program
         builder.Services.AddScoped<VideoRepository>();
 
         var app = builder.Build();
+
+        AzureMediaManager.InitManager();
 
         app.UseCors();
 
