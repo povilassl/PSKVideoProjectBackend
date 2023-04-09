@@ -168,6 +168,14 @@ namespace PSKVideoProjectBackend
 
                 var streamUrl = await ContinueRunningJobInBackground(job, inputAsset, outputAsset, locatorName);
 
+                if (String.IsNullOrEmpty(streamUrl))
+                {
+                    _logger.LogError("There was en error encoding the video asset");
+                    await CleanUpAsync(_videoTransform, job, inputAsset, outputAsset);
+
+                    return null!;
+                }
+
                 //Upload thumbnail
                 var thumbnailUrl = await UploadThumbnailImage(videoToUpload.ThumbnailImage);
 
@@ -188,7 +196,7 @@ namespace PSKVideoProjectBackend
             catch (Exception ex)
             {
                 _logger.LogError(ex.Message);
-                return null;
+                return null!;
             }
         }
 
@@ -411,13 +419,13 @@ namespace PSKVideoProjectBackend
         {
             try
             {
-                //TODO: iki galo is tiesu nesuprantu, ar cia gerai
-                await job.DeleteAsync(WaitUntil.Completed);
-                await transform.DeleteAsync(WaitUntil.Completed);
+                if (job != null) await job.DeleteAsync(WaitUntil.Completed);
+
+                if (transform != null) await transform.DeleteAsync(WaitUntil.Completed);
 
                 if (inputAsset != null) await inputAsset.DeleteAsync(WaitUntil.Completed);
 
-                await outputAsset.DeleteAsync(WaitUntil.Completed);
+                if (outputAsset != null) await outputAsset.DeleteAsync(WaitUntil.Completed);
             }
             catch (Exception ex)
             {
