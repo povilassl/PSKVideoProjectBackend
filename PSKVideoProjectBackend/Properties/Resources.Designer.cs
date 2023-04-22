@@ -169,6 +169,33 @@ namespace PSKVideoProjectBackend.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Filler.email@gmail.com.
+        /// </summary>
+        public static string FillerEmail {
+            get {
+                return ResourceManager.GetString("FillerEmail", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Filler first name.
+        /// </summary>
+        public static string FillerFirstName {
+            get {
+                return ResourceManager.GetString("FillerFirstName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Filler last name.
+        /// </summary>
+        public static string FillerLastName {
+            get {
+                return ResourceManager.GetString("FillerLastName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to URL.
         /// </summary>
         public static string FillerURL {

@@ -19,6 +19,7 @@ namespace PSKVideoProjectBackend.Repositories
             _logger = logger;
         }
 
+        //TODO: move to this: _apiDbContext.UploadedVideos.Skip(startIndex).Take(count).ToList();
         public IEnumerable<UploadedVideo>? GetListOfVideos(int startIndex, int count)
         {
             var allVideos = _apiDbContext.UploadedVideos.ToList();
