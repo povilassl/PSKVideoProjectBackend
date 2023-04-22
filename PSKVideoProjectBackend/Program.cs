@@ -44,6 +44,7 @@ internal class Program
 
         //repositories
         builder.Services.AddScoped<VideoRepository>();
+        builder.Services.AddScoped<UserRepository>();
 
         var app = builder.Build();
 

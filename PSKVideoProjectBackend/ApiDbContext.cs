@@ -14,6 +14,7 @@ namespace PSKVideoProjectBackend
 
         public DbSet<UploadedVideo> UploadedVideos => Set<UploadedVideo>();
         public DbSet<VideoComment> Comments => Set<VideoComment>();
+        public DbSet<User> Users => Set<User>();
     }
 }
 
