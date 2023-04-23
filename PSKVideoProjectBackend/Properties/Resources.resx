@@ -168,4 +168,25 @@
   <data name="IncorrectImageFormat" xml:space="preserve">
     <value>Thumbnail image has to be of either png or jpeg format.</value>
   </data>
+  <data name="FillerEmail" xml:space="preserve">
+    <value>Filler.email@gmail.com</value>
+  </data>
+  <data name="FillerFirstName" xml:space="preserve">
+    <value>Filler first name</value>
+  </data>
+  <data name="FillerLastName" xml:space="preserve">
+    <value>Filler last name</value>
+  </data>
+  <data name="PasswordNotSecureErr" xml:space="preserve">
+    <value>Password didnt pass the security checks</value>
+  </data>
+  <data name="CredentialsDontMatchtErr" xml:space="preserve">
+    <value>An account with specified credentials doesn't exist</value>
+  </data>
+  <data name="UsernameTakenErr" xml:space="preserve">
+    <value>Username is already taken</value>
+  </data>
+  <data name="UserNotFoundInDb" xml:space="preserve">
+    <value>User not found. Please log in again.</value>
+  </data>
 </root>
