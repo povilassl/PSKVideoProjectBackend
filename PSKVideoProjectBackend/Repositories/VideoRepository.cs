@@ -3,8 +3,10 @@ using Microsoft.Azure.Management.Media.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using PSKVideoProjectBackend.Models;
+using PSKVideoProjectBackend.Models.Enums;
 using PSKVideoProjectBackend.Properties;
 using System.Diagnostics;
+using System.Security.Claims;
 
 namespace PSKVideoProjectBackend.Repositories
 {
@@ -19,6 +21,7 @@ namespace PSKVideoProjectBackend.Repositories
             _logger = logger;
         }
 
+        //TODO: move to this: _apiDbContext.UploadedVideos.Skip(startIndex).Take(count).ToList();
         public IEnumerable<UploadedVideo>? GetListOfVideos(int startIndex, int count)
         {
             var allVideos = _apiDbContext.UploadedVideos.ToList();
@@ -35,11 +38,17 @@ namespace PSKVideoProjectBackend.Repositories
             return allVideos.GetRange(startIndex, endIndex - startIndex + 1);
         }
 
-        public async Task<UploadedVideo> UploadVideo(VideoToUpload video)
+        /// <summary>
+        /// Used to upload a video
+        /// </summary>
+        /// <param name="video"></param>
+        /// <param name="user"></param>
+        /// <returns></returns>
+        public async Task<UploadedVideo> UploadVideo(VideoToUpload video, RegisteredUser user)
         {
             try
             {
-                return await AzureMediaManager.UploadVideo(_logger, _apiDbContext, video);
+                return await AzureMediaManager.UploadVideo(_logger, _apiDbContext, video, user);
             }
             catch (Exception ex)
             {
@@ -48,6 +57,11 @@ namespace PSKVideoProjectBackend.Repositories
             }
         }
 
+        /// <summary>
+        /// Temporary endpoint for multiple video object upload
+        /// </summary>
+        /// <param name="video"></param>
+        /// <returns></returns>
         public async Task<UploadedVideo> UploadVideoTemp(UploadedVideo video)
         {
             var result = await _apiDbContext.UploadedVideos.AddAsync(video);
@@ -61,44 +75,104 @@ namespace PSKVideoProjectBackend.Repositories
         /// <param name="videoId"></param>
         /// <param name="like"></param>
         /// <param name="increase"></param>
+        /// <param name="claimsPrincipal"></param>
         /// <returns></returns>
-        /// TODO: right now a user can like and dislike a video multiple times, this can be solved with register and login
-        public async Task<UploadedVideo> LikeAVideo(int videoId, bool like, bool increase)
+        public async Task<UploadedVideo> LikeAVideo(uint videoId, bool like, bool increase, RegisteredUser user)
         {
             var video = await _apiDbContext.UploadedVideos.FirstOrDefaultAsync(el => el.Id == videoId);
 
             if (video == null) return null!;
 
+            var currentReaction = await _apiDbContext.VideoReactions.FirstOrDefaultAsync(el =>
+                el.UserId == user.Id && el.VideoId == videoId);
+
+            if (currentReaction == null) currentReaction = new() { Reaction = VideoReactionEnum.None };
+
+            var newReaction = currentReaction.Reaction;
+
             if (like)
             {
                 if (increase)
                 {
-                    if (video.LikeCount != uint.MaxValue) video.LikeCount++;
+                    if (video.LikeCount != uint.MaxValue && currentReaction.Reaction != VideoReactionEnum.Liked)
+                    {
+                        video.LikeCount++;
+
+                        if (currentReaction.Reaction == VideoReactionEnum.Disliked) video.DislikeCount--;
+
+                        newReaction = VideoReactionEnum.Liked;
+                    }
                 }
                 else
                 {
-                    if (video.LikeCount != 0) video.LikeCount--;
+                    if (video.LikeCount != 0 && currentReaction.Reaction == VideoReactionEnum.Liked)
+                    {
+                        video.LikeCount--;
+                        newReaction = VideoReactionEnum.None;
+                    }
                 }
             }
             else
             {
                 if (increase)
                 {
-                    if (video.DislikeCount != uint.MaxValue) video.DislikeCount++;
+                    if (video.DislikeCount != uint.MaxValue && currentReaction.Reaction != VideoReactionEnum.Disliked)
+                    {
+                        video.DislikeCount++;
+
+                        if (currentReaction.Reaction == VideoReactionEnum.Liked) video.LikeCount--;
+
+                        newReaction = VideoReactionEnum.Disliked;
+                    }
                 }
                 else
                 {
-                    if (video.DislikeCount != 0) video.DislikeCount--;
+                    if (video.DislikeCount != 0 && currentReaction.Reaction == VideoReactionEnum.Disliked)
+                    {
+                        video.DislikeCount--;
+                        newReaction = VideoReactionEnum.None;
+                    }
                 }
             }
 
-            var result = _apiDbContext.UploadedVideos.Update(video);
-            await _apiDbContext.SaveChangesAsync();
+            if (newReaction != currentReaction.Reaction)
+            {
+                _apiDbContext.UploadedVideos.Update(video);
+
+                if (newReaction == VideoReactionEnum.None && currentReaction.Id != 0)
+                {
+                    _apiDbContext.VideoReactions.Remove(currentReaction);
+                }
+                else
+                {
+                    currentReaction.Reaction = newReaction;
+
+                    //if it has not beed added before
+                    if (currentReaction.Id == 0)
+                    {
+                        currentReaction.UserId = user.Id;
+                        currentReaction.VideoId = videoId;
+
+                        var res = await _apiDbContext.VideoReactions.AddAsync(currentReaction);
+                    }
+                    else
+                    {
+                        _apiDbContext.VideoReactions.Update(currentReaction);
+                    }
+                }
+
+                await _apiDbContext.SaveChangesAsync();
+            }
 
             return video;
         }
 
-        public async Task<VideoComment> AddComment(VideoComment comment)
+        /// <summary>
+        /// Used to add a comment or a reply to a comment
+        /// </summary>
+        /// <param name="comment"></param>
+        /// <returns></returns>
+        public async Task<VideoComment> AddComment(VideoComment comment, RegisteredUser user)
         {
             comment.Id = 0;
             comment.HasComments = false;
@@ -117,9 +191,11 @@ namespace PSKVideoProjectBackend.Repositories
                 if (parentComment == null) return null!;
             }
 
+            comment.Username = user.Username;
             comment.DateTime = DateTime.Now;
 
             var result = await _apiDbContext.Comments.AddAsync(comment);
+            await _apiDbContext.SaveChangesAsync();
 
             //updating flag that parent has comments
             if (parentVideo != null)
@@ -134,14 +210,18 @@ namespace PSKVideoProjectBackend.Repositories
                 _apiDbContext.Comments.Update(parentComment);
             }
 
-            //TODO: klausimas, ar cia uztenka sito vieno - ar nereikia dar vieno iskart pridejus komentara?
             await _apiDbContext.SaveChangesAsync();
-
 
             return result.Entity;
         }
 
-        public async Task<IEnumerable<VideoComment>> GetComments(int parentId, bool isVideo)
+        /// <summary>
+        /// Used to get comments on a video or replies to a comment
+        /// </summary>
+        /// <param name="parentId"></param>
+        /// <param name="isVideo"></param>
+        /// <returns></returns>
+        public async Task<IEnumerable<VideoComment>> GetComments(uint parentId, bool isVideo)
         {
             var allComments = await _apiDbContext.Comments.ToListAsync();
             var retList = new List<VideoComment>();
@@ -164,7 +244,13 @@ namespace PSKVideoProjectBackend.Repositories
             return retList;
         }
 
-        public async Task<UploadedVideo> IncreaseViewCount(int videoId)
+        /// <summary>
+        /// Used to increase a video view count by 1
+        /// </summary>
+        /// <param name="videoId"></param>
+        /// <returns></returns>
+        /// TODO: kadangi open endpointas, tai teoriskai sita imanoma uzspammint request'ais
+        public async Task<UploadedVideo> IncreaseViewCount(uint videoId)
         {
             var video = await _apiDbContext.UploadedVideos.FirstOrDefaultAsync(el => el.Id == videoId);
 
@@ -180,9 +266,30 @@ namespace PSKVideoProjectBackend.Repositories
             return video;
         }
 
+        /// <summary>
+        /// Returns count of all uploaded videos
+        /// </summary>
+        /// <returns></returns>
         public async Task<int> GetCountOfAllVideos()
         {
             return await _apiDbContext.UploadedVideos.CountAsync();
+        }
+
+        internal async Task<VideoReaction> GetVideoReaction(ClaimsPrincipal claimsPrincipal, uint videoId)
+        {
+            var loggedInUser = await GetUserByPrincipal(claimsPrincipal);
+
+            if (loggedInUser == null) return null;
+
+            return await _apiDbContext.VideoReactions.FirstOrDefaultAsync(el => el.UserId == loggedInUser.Id && el.VideoId == videoId);
+        }
+
+        internal async Task<RegisteredUser> GetUserByPrincipal(ClaimsPrincipal claimsPrincipal)
+        {
+            var usernameClaim = claimsPrincipal.FindFirst(ClaimTypes.Name);
+            var userId = uint.Parse(usernameClaim.Value);
+
+            return await _apiDbContext.Users.FirstOrDefaultAsync(el => el.Id == userId);
         }
     }
 }
