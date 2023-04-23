@@ -61,6 +61,15 @@ namespace PSKVideoProjectBackend.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to An account with specified credentials doesn&apos;t exist.
+        /// </summary>
+        public static string CredentialsDontMatchtErr {
+            get {
+                return ResourceManager.GetString("CredentialsDontMatchtErr", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Comment with the supplied Id not found.
         /// </summary>
         public static string ErrCommentNotFoundById {
@@ -237,6 +246,24 @@ namespace PSKVideoProjectBackend.Properties {
         public static string IncorrectImageFormat {
             get {
                 return ResourceManager.GetString("IncorrectImageFormat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Password didnt pass the security checks.
+        /// </summary>
+        public static string PasswordNotSecureErr {
+            get {
+                return ResourceManager.GetString("PasswordNotSecureErr", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Username is already taken.
+        /// </summary>
+        public static string UsernameTakenErr {
+            get {
+                return ResourceManager.GetString("UsernameTakenErr", resourceCulture);
             }
         }
     }

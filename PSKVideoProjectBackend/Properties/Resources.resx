@@ -177,4 +177,13 @@
   <data name="FillerLastName" xml:space="preserve">
     <value>Filler last name</value>
   </data>
+  <data name="PasswordNotSecureErr" xml:space="preserve">
+    <value>Password didnt pass the security checks</value>
+  </data>
+  <data name="CredentialsDontMatchtErr" xml:space="preserve">
+    <value>An account with specified credentials doesn't exist</value>
+  </data>
+  <data name="UsernameTakenErr" xml:space="preserve">
+    <value>Username is already taken</value>
+  </data>
 </root>
