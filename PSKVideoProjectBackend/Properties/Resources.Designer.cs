@@ -266,5 +266,14 @@ namespace PSKVideoProjectBackend.Properties {
                 return ResourceManager.GetString("UsernameTakenErr", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to User not found. Please log in again..
+        /// </summary>
+        public static string UserNotFoundInDb {
+            get {
+                return ResourceManager.GetString("UserNotFoundInDb", resourceCulture);
+            }
+        }
     }
 }

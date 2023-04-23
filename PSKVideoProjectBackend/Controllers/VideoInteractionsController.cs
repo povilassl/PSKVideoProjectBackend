@@ -30,8 +30,10 @@ namespace PSKVideoProjectBackend.Controllers
             {
                 if (User.Identity == null || !User.Identity.IsAuthenticated) return StatusCode(StatusCodes.Status401Unauthorized);
 
-                var result = await _videoRepository.LikeAVideo(videoId, true, true, User);
+                var user = await _videoRepository.GetUserByPrincipal(User);
+                if (user == null) return StatusCode(StatusCodes.Status500InternalServerError, Resources.UserNotFoundInDb);
 
+                var result = await _videoRepository.LikeAVideo(videoId, true, true, user);
                 if (result == null) return StatusCode(StatusCodes.Status500InternalServerError, Resources.ErrVideoNotFoundById);
 
                 return Ok(result);
@@ -50,8 +52,10 @@ namespace PSKVideoProjectBackend.Controllers
             {
                 if (User.Identity == null || !User.Identity.IsAuthenticated) return StatusCode(StatusCodes.Status401Unauthorized);
 
-                var result = await _videoRepository.LikeAVideo(videoId, true, false, User);
+                var user = await _videoRepository.GetUserByPrincipal(User);
+                if (user == null) return StatusCode(StatusCodes.Status500InternalServerError, Resources.UserNotFoundInDb);
 
+                var result = await _videoRepository.LikeAVideo(videoId, true, false, user);
                 if (result == null) return StatusCode(StatusCodes.Status500InternalServerError, Resources.ErrVideoNotFoundById);
 
                 return Ok(result);
@@ -70,8 +74,10 @@ namespace PSKVideoProjectBackend.Controllers
             {
                 if (User.Identity == null || !User.Identity.IsAuthenticated) return StatusCode(StatusCodes.Status401Unauthorized);
 
-                var result = await _videoRepository.LikeAVideo(videoId, false, true, User);
+                var user = await _videoRepository.GetUserByPrincipal(User);
+                if (user == null) return StatusCode(StatusCodes.Status500InternalServerError, Resources.UserNotFoundInDb);
 
+                var result = await _videoRepository.LikeAVideo(videoId, false, true, user);
                 if (result == null) return StatusCode(StatusCodes.Status500InternalServerError, Resources.ErrVideoNotFoundById);
 
                 return Ok(result);
@@ -90,8 +96,10 @@ namespace PSKVideoProjectBackend.Controllers
             {
                 if (User.Identity == null || !User.Identity.IsAuthenticated) return StatusCode(StatusCodes.Status401Unauthorized);
 
-                var result = await _videoRepository.LikeAVideo(videoId, false, false, User);
+                var user = await _videoRepository.GetUserByPrincipal(User);
+                if (user == null) return StatusCode(StatusCodes.Status500InternalServerError, Resources.UserNotFoundInDb);
 
+                var result = await _videoRepository.LikeAVideo(videoId, false, false, user);
                 if (result == null) return StatusCode(StatusCodes.Status500InternalServerError, Resources.ErrVideoNotFoundById);
 
                 return Ok(result);
@@ -112,13 +120,14 @@ namespace PSKVideoProjectBackend.Controllers
 
                 if (!ModelState.IsValid) return BadRequest(ModelState);
 
-                var user = _videoRepository.GetUserByPrincipal(User);
+                var user = await _videoRepository.GetUserByPrincipal(User);
+                if (user == null) return StatusCode(StatusCodes.Status500InternalServerError, Resources.UserNotFoundInDb);
 
                 videoComment.Id = 0;
                 videoComment.CommentId = 0;
                 videoComment.HasComments = false;
 
-                var result = await _videoRepository.AddComment(videoComment, User);
+                var result = await _videoRepository.AddComment(videoComment, user);
 
                 if (result == null) return StatusCode(StatusCodes.Status500InternalServerError, Resources.ErrVideoNotFoundById);
 
@@ -145,9 +154,12 @@ namespace PSKVideoProjectBackend.Controllers
 
                 if (!ModelState.IsValid) return BadRequest(ModelState);
 
+                var user = await _videoRepository.GetUserByPrincipal(User);
+                if (user == null) return StatusCode(StatusCodes.Status500InternalServerError, Resources.UserNotFoundInDb);
+
                 videoComment.VideoId = 0;
 
-                var result = await _videoRepository.AddComment(videoComment, User);
+                var result = await _videoRepository.AddComment(videoComment, user);
 
                 //TODO: nelabai sugalvoju kaip padaryt, kai userio neranda, tai irgi grazina null, tada neveikia error message
                 if (result == null) return StatusCode(StatusCodes.Status500InternalServerError, Resources.ErrCommentNotFoundById);
@@ -245,7 +257,7 @@ namespace PSKVideoProjectBackend.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine(Resources.Exception + " : " + ex.Message);
+                _logger.LogError(ex.Message);
                 return StatusCode(StatusCodes.Status500InternalServerError, Resources.ErrInsertToDB);
             }
         }
@@ -271,7 +283,7 @@ namespace PSKVideoProjectBackend.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine(Resources.Exception + " : " + ex.Message);
+                _logger.LogError(ex.Message);
                 return StatusCode(StatusCodes.Status500InternalServerError, Resources.ErrInsertToDB);
             }
         }

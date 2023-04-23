@@ -186,4 +186,7 @@
   <data name="UsernameTakenErr" xml:space="preserve">
     <value>Username is already taken</value>
   </data>
+  <data name="UserNotFoundInDb" xml:space="preserve">
+    <value>User not found. Please log in again.</value>
+  </data>
 </root>
