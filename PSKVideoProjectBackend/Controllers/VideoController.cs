@@ -64,7 +64,10 @@ namespace PSKVideoProjectBackend.Controllers
                 if (video.VideoFile.Length > 10 * Math.Pow(10, 6))// 10 Mb
                     return StatusCode(StatusCodes.Status400BadRequest, Resources.ErrVideoTooLarge);
 
-                var res = await _videoRepository.UploadVideo(video, User);
+                var user = await _videoRepository.GetUserByPrincipal(User);
+                if (user == null) return StatusCode(StatusCodes.Status500InternalServerError, Resources.UserNotFoundInDb);
+
+                var res = await _videoRepository.UploadVideo(video, user);
 
                 if (res == null) return StatusCode(StatusCodes.Status500InternalServerError, Resources.ErrInsertToDB);
 
