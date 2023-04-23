@@ -1,5 +1,4 @@
 ﻿using PSKVideoProjectBackend.Properties;
-using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace PSKVideoProjectBackend.Models
@@ -38,7 +37,6 @@ namespace PSKVideoProjectBackend.Models
         public UploadedVideo(VideoToUpload videoToUpload)
         {
             VideoName = videoToUpload.VideoName;
-            Username = videoToUpload.Username;
             Description = videoToUpload.Description;
 
             Id = 0;

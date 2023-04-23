@@ -137,7 +137,7 @@ namespace PSKVideoProjectBackend
             return transform.Value;
         }
 
-        public static async Task<UploadedVideo> UploadVideo(ILogger<VideoRepository> logger, ApiDbContext apiDbContext, VideoToUpload videoToUpload)
+        public static async Task<UploadedVideo> UploadVideo(ILogger<VideoRepository> logger, ApiDbContext apiDbContext, VideoToUpload videoToUpload, RegisteredUser user)
         {
             try
             {
@@ -179,11 +179,11 @@ namespace PSKVideoProjectBackend
                 //Upload thumbnail
                 var thumbnailUrl = await UploadThumbnailImage(videoToUpload.ThumbnailImage);
 
-
                 var uploaded = new UploadedVideo(videoToUpload) {
+                    Username = user.Username,
                     ThumbnailURL = thumbnailUrl,
                     VideoURL = streamUrl,
-                    VideoDurationInSeconds = duration,
+                    VideoDurationInSeconds = duration
                 };
 
                 var res = await apiDbContext.UploadedVideos.AddAsync(uploaded);
