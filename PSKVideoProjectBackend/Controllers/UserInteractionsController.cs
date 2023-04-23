@@ -46,35 +46,6 @@ namespace PSKVideoProjectBackend.Controllers
             }
         }
 
-        /// <summary>
-        /// Check if password passes out checks
-        /// </summary>
-        /// <remarks>
-        /// </remarks>
-        /// <returns>True if passes, false if not</returns>
-        /// <remarks>
-        /// Our requirements:
-        /// length is 8 - 20
-        /// At least 1 uppercase character
-        /// At least 1 lowercase character
-        /// At least 1 special character
-        /// </remarks>
-        [AllowAnonymous]
-        [HttpGet("CheckIfPasswordSecure")]
-        public async Task<ActionResult<bool>> CheckIfPasswordSecure([Required] string password)
-        {
-            try
-            {
-                var result = _userRepository.CheckIfPasswordSecure(password);
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex.Message);
-                return StatusCode(StatusCodes.Status500InternalServerError, Resources.ErrInsertToDB);
-            }
-        }
-
         [AllowAnonymous]
         [HttpPost("RegisterNewUser")]
         public async Task<ActionResult<RegisteredUser>> RegisterNewUser([FromBody] UserToRegister userToRegister)
