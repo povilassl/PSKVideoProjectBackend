@@ -1,7 +1,9 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PSKVideoProjectBackend.Models;
 using PSKVideoProjectBackend.Properties;
 using PSKVideoProjectBackend.Repositories;
+using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 
 namespace PSKVideoProjectBackend.Controllers
@@ -19,6 +21,8 @@ namespace PSKVideoProjectBackend.Controllers
             _logger = logger;
         }
 
+        //TODO: galima bus padaryt specific selection of videos for logged in users
+        [AllowAnonymous]
         [HttpGet("GetListOfVideos")]
         public ActionResult<IEnumerable<UploadedVideo>> GetListOfVideos(int startIndex = 0, int count = 20)
         {
@@ -41,17 +45,15 @@ namespace PSKVideoProjectBackend.Controllers
             }
         }
 
-        //Sitas dar neaisku, ar bus open, ar closed - bet kuriuo atveju kazkokia autetifikacija praverstu
         [HttpPost("UploadVideo")]
-        public async Task<ActionResult<UploadedVideo>> UploadVideo([FromForm] VideoToUpload video)
+        public async Task<ActionResult<UploadedVideo>> UploadVideo([FromForm, Required] VideoToUpload video)
         {
             try
             {
-                //all info checks
+                if (User.Identity == null || !User.Identity.IsAuthenticated) return StatusCode(StatusCodes.Status401Unauthorized);
 
-                if (String.IsNullOrEmpty(video.Username) || String.IsNullOrEmpty(video.VideoName) || String.IsNullOrEmpty(video.Description) ||
-                    video.VideoFile == null || video.ThumbnailImage == null)
-                    return StatusCode(StatusCodes.Status400BadRequest, Resources.ErrNotAllInfo);
+                //all info checks
+                if (!ModelState.IsValid) return BadRequest(ModelState);
 
                 if (video.ThumbnailImage.ContentType != "image/jpeg" && video.ThumbnailImage.ContentType != "image/png")
                     return StatusCode(StatusCodes.Status400BadRequest, Resources.IncorrectImageFormat);
@@ -62,7 +64,7 @@ namespace PSKVideoProjectBackend.Controllers
                 if (video.VideoFile.Length > 10 * Math.Pow(10, 6))// 10 Mb
                     return StatusCode(StatusCodes.Status400BadRequest, Resources.ErrVideoTooLarge);
 
-                var res = await _videoRepository.UploadVideo(video);
+                var res = await _videoRepository.UploadVideo(video, User);
 
                 if (res == null) return StatusCode(StatusCodes.Status500InternalServerError, Resources.ErrInsertToDB);
 

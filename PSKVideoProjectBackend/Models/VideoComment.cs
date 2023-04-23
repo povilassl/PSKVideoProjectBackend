@@ -1,4 +1,6 @@
-﻿using PSKVideoProjectBackend.Properties;
+﻿using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
+using PSKVideoProjectBackend.Properties;
 using System.ComponentModel.DataAnnotations;
 using System.Runtime.InteropServices;
 
@@ -10,6 +12,8 @@ namespace PSKVideoProjectBackend.Models
         public uint Id { get; set; }
         public long VideoId { get; set; }
         public long CommentId { get; set; }
+
+        [Required]
         public string Comment { get; set; }
         public DateTime DateTime { get; set; }
         public string Username { get; set; }
