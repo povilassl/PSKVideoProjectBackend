@@ -23,7 +23,7 @@ namespace PSKVideoProjectBackend.Controllers
             _logger = logger;
         }
 
-        [HttpGet("AddLike")]
+        [HttpPost("AddLike")]
         public async Task<ActionResult<UploadedVideo>> AddLike([Required] uint videoId)
         {
             try
@@ -45,7 +45,7 @@ namespace PSKVideoProjectBackend.Controllers
             }
         }
 
-        [HttpGet("RemoveLike")]
+        [HttpPost("RemoveLike")]
         public async Task<ActionResult<UploadedVideo>> RemoveLike([Required] uint videoId)
         {
             try
@@ -67,7 +67,7 @@ namespace PSKVideoProjectBackend.Controllers
             }
         }
 
-        [HttpGet("AddDislike")]
+        [HttpPost("AddDislike")]
         public async Task<ActionResult<UploadedVideo>> AddDislike([Required] uint videoId)
         {
             try
@@ -89,7 +89,7 @@ namespace PSKVideoProjectBackend.Controllers
             }
         }
 
-        [HttpGet("RemoveDislike")]
+        [HttpPost("RemoveDislike")]
         public async Task<ActionResult<UploadedVideo>> RemoveDislike([Required] uint videoId)
         {
             try
