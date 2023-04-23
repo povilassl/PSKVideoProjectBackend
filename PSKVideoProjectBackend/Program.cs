@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using PSKVideoProjectBackend;
 using PSKVideoProjectBackend.Repositories;
@@ -27,23 +28,37 @@ internal class Program
                 });
         });
 
+        builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+            .AddCookie(options => {
+                options.LoginPath = new PathString("/UserInteractionsController/Login");
+                options.Cookie.Name = "VideotekaAuthentication";
+                options.ExpireTimeSpan = TimeSpan.FromDays(10);
+            });
+
+        builder.Services.AddAuthorization(options => {
+            options.AddPolicy("Public", policy => {
+                policy.RequireAuthenticatedUser();
+            });
+        });
+
         bool isDevelopment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development";
 
-        string dataSource = "Data source = ";
+        string dataSource;
 
         if (isDevelopment)
         {
-            dataSource += "DB/ProjectDatabase.db";
+            dataSource = "Data source = DB/ProjectDatabase.db";
         }
         else
         {
-            dataSource += "C:/home/site/wwwroot/ProjectDatabase.db";
+            dataSource = "Data source = C:/home/site/wwwroot/ProjectDatabase.db";
         }
 
         builder.Services.AddDbContext<ApiDbContext>(o => o.UseSqlite(dataSource));
 
         //repositories
         builder.Services.AddScoped<VideoRepository>();
+        builder.Services.AddScoped<UserRepository>();
 
         var app = builder.Build();
 
@@ -57,9 +72,15 @@ internal class Program
 
         app.UseHttpsRedirection();
 
+        app.UseRouting();
+
         app.UseAuthorization();
 
-        app.MapControllers();
+        app.UseAuthentication();
+
+        app.UseEndpoints(endpoints => {
+            endpoints.MapControllers();
+        });
 
         app.Run();
     }
