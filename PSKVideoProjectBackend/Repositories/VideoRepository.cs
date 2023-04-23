@@ -44,14 +44,11 @@ namespace PSKVideoProjectBackend.Repositories
         /// <param name="video"></param>
         /// <param name="user"></param>
         /// <returns></returns>
-        public async Task<UploadedVideo> UploadVideo(VideoToUpload video, ClaimsPrincipal user)
+        public async Task<UploadedVideo> UploadVideo(VideoToUpload video, RegisteredUser user)
         {
             try
             {
-                var loggedInUser = await GetUserByPrincipal(user);
-                if (loggedInUser == null) return null!;
-
-                return await AzureMediaManager.UploadVideo(_logger, _apiDbContext, video, loggedInUser);
+                return await AzureMediaManager.UploadVideo(_logger, _apiDbContext, video, user);
             }
             catch (Exception ex)
             {
@@ -80,16 +77,15 @@ namespace PSKVideoProjectBackend.Repositories
         /// <param name="increase"></param>
         /// <param name="claimsPrincipal"></param>
         /// <returns></returns>
-        public async Task<UploadedVideo> LikeAVideo(uint videoId, bool like, bool increase, ClaimsPrincipal claimsPrincipal)
+        public async Task<UploadedVideo> LikeAVideo(uint videoId, bool like, bool increase, RegisteredUser user)
         {
             var video = await _apiDbContext.UploadedVideos.FirstOrDefaultAsync(el => el.Id == videoId);
 
             if (video == null) return null!;
 
-            var user = await GetUserByPrincipal(claimsPrincipal);
-            if (user == null) return null!;
+            var currentReaction = await _apiDbContext.VideoReactions.FirstOrDefaultAsync(el =>
+                el.UserId == user.Id && el.VideoId == videoId);
 
-            var currentReaction = await GetVideoReaction(claimsPrincipal, videoId);
             if (currentReaction == null) currentReaction = new() { Reaction = VideoReactionEnum.None };
 
             var newReaction = currentReaction.Reaction;
@@ -176,16 +172,13 @@ namespace PSKVideoProjectBackend.Repositories
         /// </summary>
         /// <param name="comment"></param>
         /// <returns></returns>
-        public async Task<VideoComment> AddComment(VideoComment comment, ClaimsPrincipal claimsPrincipal)
+        public async Task<VideoComment> AddComment(VideoComment comment, RegisteredUser user)
         {
             comment.Id = 0;
             comment.HasComments = false;
 
             UploadedVideo? parentVideo = null;
             VideoComment? parentComment = null;
-
-            var user = await GetUserByPrincipal(claimsPrincipal);
-            if (user == null) return null!;
 
             if (comment.VideoId != 0)
             {
