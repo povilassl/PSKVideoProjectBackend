@@ -61,6 +61,15 @@ namespace PSKVideoProjectBackend.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to An account with specified credentials doesn&apos;t exist.
+        /// </summary>
+        public static string CredentialsDontMatchtErr {
+            get {
+                return ResourceManager.GetString("CredentialsDontMatchtErr", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Comment with the supplied Id not found.
         /// </summary>
         public static string ErrCommentNotFoundById {
@@ -169,6 +178,33 @@ namespace PSKVideoProjectBackend.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Filler.email@gmail.com.
+        /// </summary>
+        public static string FillerEmail {
+            get {
+                return ResourceManager.GetString("FillerEmail", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Filler first name.
+        /// </summary>
+        public static string FillerFirstName {
+            get {
+                return ResourceManager.GetString("FillerFirstName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Filler last name.
+        /// </summary>
+        public static string FillerLastName {
+            get {
+                return ResourceManager.GetString("FillerLastName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to URL.
         /// </summary>
         public static string FillerURL {
@@ -210,6 +246,33 @@ namespace PSKVideoProjectBackend.Properties {
         public static string IncorrectImageFormat {
             get {
                 return ResourceManager.GetString("IncorrectImageFormat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Password didnt pass the security checks.
+        /// </summary>
+        public static string PasswordNotSecureErr {
+            get {
+                return ResourceManager.GetString("PasswordNotSecureErr", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Username is already taken.
+        /// </summary>
+        public static string UsernameTakenErr {
+            get {
+                return ResourceManager.GetString("UsernameTakenErr", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to User not found. Please log in again..
+        /// </summary>
+        public static string UserNotFoundInDb {
+            get {
+                return ResourceManager.GetString("UserNotFoundInDb", resourceCulture);
             }
         }
     }
