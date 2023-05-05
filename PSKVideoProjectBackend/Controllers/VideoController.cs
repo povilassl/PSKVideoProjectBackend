@@ -52,9 +52,6 @@ namespace PSKVideoProjectBackend.Controllers
             {
                 if (User.Identity == null || !User.Identity.IsAuthenticated) return StatusCode(StatusCodes.Status401Unauthorized);
 
-                //all info checks
-                if (!ModelState.IsValid) return BadRequest(ModelState);
-
                 if (video.ThumbnailImage.ContentType != "image/jpeg" && video.ThumbnailImage.ContentType != "image/png")
                     return StatusCode(StatusCodes.Status400BadRequest, Resources.IncorrectImageFormat);
 
