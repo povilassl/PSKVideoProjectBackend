@@ -4,11 +4,19 @@ using PSKVideoProjectBackend;
 using PSKVideoProjectBackend.Repositories;
 using System.Diagnostics;
 using System.Reflection;
+using log4net;
+using log4net.Config;
 
 internal class Program
 {
+    private static readonly ILog _log = LogManager.GetLogger(typeof(Program));
+
     private static void Main(string[] args)
     {
+        var logRepository = LogManager.GetRepository(Assembly.GetEntryAssembly());
+        XmlConfigurator.ConfigureAndWatch(logRepository, new FileInfo("log4net.config"));
+        _log.Info("Application starting");
+
         var builder = WebApplication.CreateBuilder(args);
 
         builder.Services.AddControllers();
@@ -22,11 +30,14 @@ internal class Program
         builder.Services.AddCors(options => {
             options.AddDefaultPolicy(
                 builder => {
-                    builder.AllowAnyOrigin()
+                    builder
+                        .AllowAnyOrigin()
                         .AllowAnyMethod()
                         .AllowAnyHeader();
                 });
         });
+
+        builder.Logging.AddLog4Net();
 
         builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
             .AddCookie(options => {
@@ -41,18 +52,11 @@ internal class Program
             });
         });
 
-        bool isDevelopment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development";
+        var isDevelopment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development";
 
-        string dataSource;
-
-        if (isDevelopment)
-        {
-            dataSource = "Data source = DB/ProjectDatabase.db";
-        }
-        else
-        {
-            dataSource = "Data source = C:/home/site/wwwroot/ProjectDatabase.db";
-        }
+        string dataSource = isDevelopment
+            ? "Data source=DB/ProjectDatabase.db"
+            : "Data source=C:/home/site/wwwroot/ProjectDatabase.db";
 
         builder.Services.AddDbContext<ApiDbContext>(o => o.UseSqlite(dataSource));
 
@@ -62,7 +66,7 @@ internal class Program
 
         var app = builder.Build();
 
-        AzureMediaManager.InitManager();
+        AzureMediaManager.Instance.InitManager();
 
         app.UseCors();
 
@@ -77,6 +81,8 @@ internal class Program
         app.UseAuthorization();
 
         app.UseAuthentication();
+
+        app.UseMiddleware<LoggingMiddleware>();
 
         app.UseEndpoints(endpoints => {
             endpoints.MapControllers();
