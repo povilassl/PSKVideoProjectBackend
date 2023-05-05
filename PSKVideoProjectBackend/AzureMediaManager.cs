@@ -5,6 +5,7 @@ using Azure.ResourceManager.Media;
 using Azure.ResourceManager.Media.Models;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
+using log4net;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Management.Media;
 using Microsoft.Azure.Management.Media.Models;
@@ -22,10 +23,8 @@ using System.Diagnostics;
 
 namespace PSKVideoProjectBackend
 {
-    public static class AzureMediaManager
+    public sealed class AzureMediaManager
     {
-        private static ILogger<VideoRepository> _logger;
-
         public static AzConfigWrapper? _mediaConfig = null;
         public static IAzureMediaServicesClient? _mediaClient = null;
         public static MediaServicesAccountResource? _mediaServicesAccount = null;
@@ -37,7 +36,25 @@ namespace PSKVideoProjectBackend
         static string _thumbnailBlobUriPrefix = "https://mediastorageaccount1312.blob.core.windows.net/thumbnail-images/";
         static string _streamingEndpointName = "default";
 
-        public static async Task InitManager()
+        private static readonly AzureMediaManager _instance = new AzureMediaManager();
+        private readonly ILog _logger;
+
+        static AzureMediaManager()
+        {
+        }
+
+        private AzureMediaManager()
+        {
+            // Load log4net configuration
+            log4net.Config.XmlConfigurator.Configure(new System.IO.FileInfo("log4net.config"));
+
+            // Get logger for this class
+            _logger = LogManager.GetLogger(typeof(AzureMediaManager));
+        }
+
+        public static AzureMediaManager Instance => _instance;
+
+        public async Task InitManager()
         {
             try
             {
@@ -53,7 +70,7 @@ namespace PSKVideoProjectBackend
                 _thumbnailContainerClient = _thumbnailBlobClient.GetBlobContainerClient("thumbnail-images");
 
                 //setting up config for media resources
-                Console.WriteLine("Dir:" + Directory.GetCurrentDirectory());
+                _logger.Info("Dir:" + Directory.GetCurrentDirectory());
 
                 AzConfigWrapper config = new AzConfigWrapper(new ConfigurationBuilder()
                     .SetBasePath(Directory.GetCurrentDirectory())
@@ -71,12 +88,12 @@ namespace PSKVideoProjectBackend
             {
                 if (exception.Source.Contains("ActiveDirectory"))
                 {
-                    Console.WriteLine("TIP: Make sure that you have filled out the appsettings.json file before running this sample.");
+                    _logger.Info("TIP: Make sure that you have filled out the appsettings.json file before running this sample.");
                 }
 
                 if (exception.GetBaseException() is ErrorResponseException apiException)
                 {
-                    Console.WriteLine(
+                    _logger.Error(
                         $"API call failed with error code '{apiException.Body.Error.Code}' and message '{apiException.Body.Error.Message}'.");
                 }
 
@@ -100,8 +117,8 @@ namespace PSKVideoProjectBackend
             }
             catch (Exception e)
             {
-                Console.WriteLine("Could not create Media Services Account or Video Transform");
-                Console.WriteLine("Error: " + e.Message);
+                _logger.Error("Could not create Media Services Account or Video Transform");
+                _logger.Error(e.Message);
 
                 throw;
             }
@@ -137,12 +154,10 @@ namespace PSKVideoProjectBackend
             return transform.Value;
         }
 
-        public static async Task<UploadedVideo> UploadVideo(ILogger<VideoRepository> logger, ApiDbContext apiDbContext, VideoToUpload videoToUpload, RegisteredUser user)
+        public async Task<UploadedVideo> UploadVideo(ApiDbContext apiDbContext, VideoToUpload videoToUpload, RegisteredUser user)
         {
             try
             {
-                _logger = logger;
-
                 var videoFile = videoToUpload.VideoFile;
 
                 string InputMP4FileName = videoFile.FileName;
@@ -170,7 +185,7 @@ namespace PSKVideoProjectBackend
 
                 if (String.IsNullOrEmpty(streamUrl))
                 {
-                    _logger.LogError("There was en error encoding the video asset");
+                    _logger.Error("There was en error encoding the video asset");
                     await CleanUpAsync(_videoTransform, job, inputAsset, outputAsset);
 
                     return null!;
@@ -195,24 +210,24 @@ namespace PSKVideoProjectBackend
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex.Message);
+                _logger.Error(ex.Message);
                 return null!;
             }
         }
 
-        private static async Task<string> ContinueRunningJobInBackground(
+        private async Task<string> ContinueRunningJobInBackground(
             MediaJobResource job, MediaAssetResource inputAsset,
             MediaAssetResource outputAsset, string locatorName)
         {
             try
             {
-                _logger.LogInformation("Polling Job status...");
+                _logger.Info("Polling Job status...");
                 job = await WaitForJobToFinishAsync(job);
 
                 if (job.Data.State == MediaJobState.Error)
                 {
-                    _logger.LogError($"Job finished with error message: {job.Data.Outputs[0].Error.Message}");
-                    _logger.LogError($"                  error details: {job.Data.Outputs[0].Error.Details[0].Message}");
+                    _logger.Error($"Job finished with error message: {job.Data.Outputs[0].Error.Message}");
+                    _logger.Error($"                  error details: {job.Data.Outputs[0].Error.Details[0].Message}");
                     await CleanUpAsync(_videoTransform!, job, inputAsset, outputAsset);
                     return null;
                 }
@@ -220,7 +235,7 @@ namespace PSKVideoProjectBackend
                 var streamingLocator = await CreateStreamingLocatorAsync(_mediaServicesAccount, outputAsset.Data.Name, locatorName);
                 var streamingEndpoint = (await _mediaServicesAccount.GetStreamingEndpoints().GetAsync(_streamingEndpointName)).Value;
 
-                _logger.LogInformation("Getting the streaming manifest URLs for HLS and DASH:");
+                _logger.Info("Getting the streaming manifest URLs for HLS and DASH:");
                 var streamingUrl = await GetStreamingUrlAsync(streamingLocator, streamingEndpoint);
 
                 return streamingUrl;
@@ -228,12 +243,12 @@ namespace PSKVideoProjectBackend
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex.Message);
+                _logger.Error(ex.Message);
                 return null;
             }
         }
 
-        private static async Task<string> GetStreamingUrlAsync(StreamingLocatorResource locator, StreamingEndpointResource streamingEndpoint)
+        private async Task<string> GetStreamingUrlAsync(StreamingLocatorResource locator, StreamingEndpointResource streamingEndpoint)
         {
             try
             {
@@ -256,12 +271,12 @@ namespace PSKVideoProjectBackend
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex.Message);
+                _logger.Error(ex.Message);
                 return null;
             }
         }
 
-        async static Task<Tuple<MediaAssetResource, uint>> CreateInputAssetAsync(
+        async Task<Tuple<MediaAssetResource, uint>> CreateInputAssetAsync(
            MediaServicesAccountResource mediaServicesAccount, string assetName, IFormFile videoFile)
         {
             // We are assuming that the Asset name is unique.
@@ -278,14 +293,14 @@ namespace PSKVideoProjectBackend
 
                 // The Asset already exists and we are going to overwrite it. In your application, if you don't want to overwrite
                 // an existing Asset, use an unique name.
-                _logger.LogWarning($"The Asset named {assetName} already exists. It will be overwritten.");
+                _logger.Warn($"The Asset named {assetName} already exists. It will be overwritten.");
             }
             catch (RequestFailedException)
             {
                 // Call Media Services API to create an Asset.
                 // This method creates a container in storage for the Asset.
                 // The files (blobs) associated with the Asset will be stored in this container.
-                _logger.LogInformation("Creating an input Asset...");
+                _logger.Info("Creating an input Asset...");
                 asset = (await mediaServicesAccount.GetMediaAssets().CreateOrUpdateAsync(WaitUntil.Completed, assetName, new MediaAssetData())).Value;
             }
 
@@ -322,7 +337,7 @@ namespace PSKVideoProjectBackend
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex.Message);
+                _logger.Error(ex.Message);
                 return null;
             }
             finally
@@ -335,9 +350,9 @@ namespace PSKVideoProjectBackend
 
 
         // Creates an output Asset. The output from the encoding Job must be written to an Asset.
-        async static Task<MediaAssetResource> CreateOutputAssetAsync(MediaServicesAccountResource mediaServicesAccount, string assetName)
+        async Task<MediaAssetResource> CreateOutputAssetAsync(MediaServicesAccountResource mediaServicesAccount, string assetName)
         {
-            _logger.LogInformation("Creating an output Asset...");
+            _logger.Info("Creating an output Asset...");
             var asset = await mediaServicesAccount.GetMediaAssets().CreateOrUpdateAsync(
                 WaitUntil.Completed,
                 assetName,
@@ -348,12 +363,12 @@ namespace PSKVideoProjectBackend
 
 
         // Submits a request to Media Services to apply the specified Transform to a given input video.
-        static async Task<MediaJobResource> SubmitJobAsync(MediaTransformResource transform, string jobName, MediaAssetResource inputAsset, MediaAssetResource outputAsset)
+        async Task<MediaJobResource> SubmitJobAsync(MediaTransformResource transform, string jobName, MediaAssetResource inputAsset, MediaAssetResource outputAsset)
         {
             try
             {
                 // We are assuming that the Job name is unique.
-                _logger.LogInformation("Creating a Job...");
+                _logger.Info("Creating a Job...");
 
                 var job = await transform.GetMediaJobs().CreateOrUpdateAsync(
                     WaitUntil.Completed,
@@ -367,14 +382,14 @@ namespace PSKVideoProjectBackend
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex.Message);
+                _logger.Error(ex.Message);
                 return null;
             }
 
         }
 
         // Polls Media Services for the status of the Job.
-        static async Task<MediaJobResource> WaitForJobToFinishAsync(MediaJobResource job)
+        async Task<MediaJobResource> WaitForJobToFinishAsync(MediaJobResource job)
         {
             try
             {
@@ -386,14 +401,14 @@ namespace PSKVideoProjectBackend
                     job = await job.GetAsync();
                     state = job.Data.State.GetValueOrDefault();
 
-                    _logger.LogInformation($"Job is '{state}'.");
+                    _logger.Info($"Job is '{state}'.");
                     for (int i = 0; i < job.Data.Outputs.Count; i++)
                     {
                         var output = job.Data.Outputs[i];
-                        _logger.LogInformation($"\tJobOutput[{i}] is '{output.State}'.");
+                        _logger.Info($"\tJobOutput[{i}] is '{output.State}'.");
                         if (output.State == MediaJobState.Processing)
                         {
-                            _logger.LogInformation($"  Progress: '{output.Progress}'.");
+                            _logger.Info($"  Progress: '{output.Progress}'.");
                         }
                     }
 
@@ -408,14 +423,14 @@ namespace PSKVideoProjectBackend
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex.Message);
+                _logger.Error(ex.Message);
                 return null;
             }
 
         }
 
         // Delete the resources that were created.
-        static async Task CleanUpAsync(MediaTransformResource transform, MediaJobResource job, MediaAssetResource? inputAsset, MediaAssetResource outputAsset)
+        async Task CleanUpAsync(MediaTransformResource transform, MediaJobResource job, MediaAssetResource? inputAsset, MediaAssetResource outputAsset)
         {
             try
             {
@@ -429,14 +444,14 @@ namespace PSKVideoProjectBackend
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex.Message);
+                _logger.Error(ex.Message);
             }
 
         }
 
         /// Creates a StreamingLocator for the specified Asset and with the specified streaming policy name.
         /// Once the StreamingLocator is created the output Asset is available to clients for playback.
-        static async Task<StreamingLocatorResource> CreateStreamingLocatorAsync(
+        async Task<StreamingLocatorResource> CreateStreamingLocatorAsync(
             MediaServicesAccountResource mediaServicesAccount,
             string assetName,
             string locatorName)
@@ -456,12 +471,12 @@ namespace PSKVideoProjectBackend
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex.Message);
+                _logger.Error(ex.Message);
                 return null;
             }
         }
 
-        static async Task<string> UploadThumbnailImage(IFormFile image)
+        async Task<string> UploadThumbnailImage(IFormFile image)
         {
             Response<BlobContentInfo> response;
 
@@ -482,7 +497,7 @@ namespace PSKVideoProjectBackend
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex.Message);
+                    _logger.Error(ex.Message);
                     return null!;
                 }
 
