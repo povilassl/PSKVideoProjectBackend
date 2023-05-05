@@ -32,7 +32,7 @@ namespace PSKVideoProjectBackend.Helpers
                 Salt = salt,
                 DegreeOfParallelism = 8, // number of threads
                 Iterations = 4,
-                MemorySize = 1024 * 1024, // 1 GB of memory
+                MemorySize = 65536,
             };
 
             return argon2.GetBytes(32);
