@@ -48,7 +48,7 @@ namespace PSKVideoProjectBackend.Repositories
         {
             try
             {
-                return await AzureMediaManager.UploadVideo(_logger, _apiDbContext, video, user);
+                return await AzureMediaManager.Instance.UploadVideo(_apiDbContext, video, user);
             }
             catch (Exception ex)
             {
