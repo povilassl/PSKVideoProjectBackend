@@ -6,6 +6,10 @@ using System.Diagnostics;
 using System.Reflection;
 using log4net;
 using log4net.Config;
+using PSKVideoProjectBackend.Hubs;
+using PSKVideoProjectBackend.Helpers;
+using PSKVideoProjectBackend.Middleware;
+using PSKVideoProjectBackend.Managers;
 
 internal class Program
 {
@@ -52,6 +56,8 @@ internal class Program
             });
         });
 
+        builder.Services.AddSignalR();
+
         var isDevelopment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development";
 
         string dataSource = isDevelopment
@@ -64,9 +70,23 @@ internal class Program
         builder.Services.AddScoped<VideoRepository>();
         builder.Services.AddScoped<UserRepository>();
 
-        var app = builder.Build();
+        //Singletons
+        builder.Services.AddSingleton<SignalRConnectionMapping>();
+        builder.Services.AddSingleton<SignalRManager>();
 
-        AzureMediaManager.Instance.InitManager();
+        //Downside is that InitManager() fires upon first request to the server
+        builder.Services.AddSingleton(provider => {
+            var signalRManager = provider.GetService<SignalRManager>();
+            var logger = provider.GetService<ILoggerFactory>()!.CreateLogger<AzureMediaManager>();
+
+            var scopeFactory = provider.GetService<IServiceScopeFactory>();
+
+            var myService = new AzureMediaManager(signalRManager!, logger, scopeFactory!);
+            myService.InitManager().Wait();
+            return myService;
+        });
+
+        var app = builder.Build();
 
         app.UseCors();
 
@@ -86,6 +106,7 @@ internal class Program
 
         app.UseEndpoints(endpoints => {
             endpoints.MapControllers();
+            endpoints.MapHub<NotificationHub>("/notificationHub");
         });
 
         app.Run();
