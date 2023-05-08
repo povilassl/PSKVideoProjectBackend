@@ -1,10 +1,15 @@
-﻿namespace PSKVideoProjectBackend
+﻿namespace PSKVideoProjectBackend.Middleware
 {
     public class LoggingMiddleware
     {
         private readonly ILogger<LoggingMiddleware> _logger;
         private readonly RequestDelegate _next;
 
+        /// <summary>
+        /// Used to log all called requests upon start and finish
+        /// </summary>
+        /// <param name="logger"></param>
+        /// <param name="next"></param>
         public LoggingMiddleware(ILogger<LoggingMiddleware> logger, RequestDelegate next)
         {
             _logger = logger;
