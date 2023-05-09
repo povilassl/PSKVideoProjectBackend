@@ -275,5 +275,23 @@ namespace PSKVideoProjectBackend.Properties {
                 return ResourceManager.GetString("UserNotFoundInDb", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to There was an error uploading your video. Please try again later.
+        /// </summary>
+        public static string VideoUploadNotificationFail {
+            get {
+                return ResourceManager.GetString("VideoUploadNotificationFail", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Your video was uploaded successfully.
+        /// </summary>
+        public static string VideoUploadNotificationSuccess {
+            get {
+                return ResourceManager.GetString("VideoUploadNotificationSuccess", resourceCulture);
+            }
+        }
     }
 }
