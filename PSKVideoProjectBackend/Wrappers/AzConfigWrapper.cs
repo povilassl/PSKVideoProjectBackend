@@ -1,4 +1,4 @@
-﻿namespace PSKVideoProjectBackend
+﻿namespace PSKVideoProjectBackend.Wrappers
 {
     public class AzConfigWrapper
     {
