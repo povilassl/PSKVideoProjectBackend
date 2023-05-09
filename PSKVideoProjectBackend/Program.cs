@@ -21,6 +21,8 @@ internal class Program
         XmlConfigurator.ConfigureAndWatch(logRepository, new FileInfo("log4net.config"));
         _log.Info("Application starting");
 
+        var isDevelopment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development";
+
         var builder = WebApplication.CreateBuilder(args);
 
         builder.Services.AddControllers();
@@ -31,13 +33,15 @@ internal class Program
             $"{Assembly.GetExecutingAssembly().GetName().Name}.xml"));
         });
 
+        string origins = isDevelopment ? "https://localhost" : "https://pskvideoprojectbackendappservice.azurewebsites.net";
+
         builder.Services.AddCors(options => {
             options.AddDefaultPolicy(
                 builder => {
-                    builder
-                        .AllowAnyOrigin()
+                    builder.WithOrigins(origins)
                         .AllowAnyMethod()
-                        .AllowAnyHeader();
+                        .AllowAnyHeader()
+                        .AllowCredentials();
                 });
         });
 
@@ -58,7 +62,6 @@ internal class Program
 
         builder.Services.AddSignalR();
 
-        var isDevelopment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development";
 
         string dataSource = isDevelopment
             ? "Data source=DB/ProjectDatabase.db"
