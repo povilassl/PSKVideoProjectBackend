@@ -189,4 +189,10 @@
   <data name="UserNotFoundInDb" xml:space="preserve">
     <value>User not found. Please log in again.</value>
   </data>
+  <data name="VideoUploadNotificationFail" xml:space="preserve">
+    <value>There was an error uploading your video. Please try again later</value>
+  </data>
+  <data name="VideoUploadNotificationSuccess" xml:space="preserve">
+    <value>Your video was uploaded successfully</value>
+  </data>
 </root>

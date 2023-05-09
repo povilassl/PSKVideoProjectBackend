@@ -46,7 +46,7 @@ namespace PSKVideoProjectBackend.Controllers
         }
 
         [HttpPost("UploadVideo")]
-        public async Task<ActionResult<UploadedVideo>> UploadVideo([FromForm, Required] VideoToUpload video)
+        public async Task<ActionResult<UploadedVideo>> UploadVideo([FromForm, Required] VideoToUpload video, [FromForm, Required] bool sendEmail)
         {
             try
             {
@@ -64,11 +64,9 @@ namespace PSKVideoProjectBackend.Controllers
                 var user = await _videoRepository.GetUserByPrincipal(User);
                 if (user == null) return StatusCode(StatusCodes.Status500InternalServerError, Resources.UserNotFoundInDb);
 
-                var res = await _videoRepository.UploadVideo(video, user);
+                var res = await _videoRepository.UploadVideo(video, user, sendEmail);
 
-                if (res == null) return StatusCode(StatusCodes.Status500InternalServerError, Resources.ErrInsertToDB);
-
-                return Ok(res);
+                return res ? Ok() : StatusCode(StatusCodes.Status500InternalServerError, Resources.VideoUploadNotificationFail);
             }
             catch (Exception ex)
             {
