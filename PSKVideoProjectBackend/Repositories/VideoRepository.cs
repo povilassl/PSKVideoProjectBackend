@@ -2,6 +2,7 @@
 using Microsoft.Azure.Management.Media.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using PSKVideoProjectBackend.Managers;
 using PSKVideoProjectBackend.Models;
 using PSKVideoProjectBackend.Models.Enums;
 using PSKVideoProjectBackend.Properties;
@@ -14,11 +15,13 @@ namespace PSKVideoProjectBackend.Repositories
     {
         private readonly ApiDbContext _apiDbContext;
         private readonly ILogger<VideoRepository> _logger;
+        private readonly AzureMediaManager _azureMediaManager;
 
-        public VideoRepository(ApiDbContext apiDbContext, ILogger<VideoRepository> logger)
+        public VideoRepository(ApiDbContext apiDbContext, ILogger<VideoRepository> logger, AzureMediaManager azureMediaManager)
         {
             _apiDbContext = apiDbContext;
             _logger = logger;
+            _azureMediaManager = azureMediaManager;
         }
 
         //TODO: move to this: _apiDbContext.UploadedVideos.Skip(startIndex).Take(count).ToList();
@@ -43,17 +46,18 @@ namespace PSKVideoProjectBackend.Repositories
         /// </summary>
         /// <param name="video"></param>
         /// <param name="user"></param>
+        /// <param name="sendEmail"></param>
         /// <returns></returns>
-        public async Task<UploadedVideo> UploadVideo(VideoToUpload video, RegisteredUser user)
+        public async Task<bool> UploadVideo(VideoToUpload video, RegisteredUser user, bool sendEmail)
         {
             try
             {
-                return await AzureMediaManager.Instance.UploadVideo(_apiDbContext, video, user);
+                return await _azureMediaManager.UploadVideo(video, user, sendEmail);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex.Message);
-                return null!;
+                return false;
             }
         }
 
