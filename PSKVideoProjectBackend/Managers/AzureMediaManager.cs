@@ -207,7 +207,7 @@ namespace PSKVideoProjectBackend.Managers
                 _logger.LogError("There was en error encoding the video asset");
                 await CleanUpAsync(_videoTransform!, job, inputAsset, outputAsset);
 
-                await PushNotificationForUser(VideoJobUploadState.Failure, sendEmail, user.Id.ToString());
+                await PushNotificationForUser(false, sendEmail, user.Id.ToString());
             }
 
             var uploaded = new UploadedVideo(videoToUpload) {
@@ -228,7 +228,7 @@ namespace PSKVideoProjectBackend.Managers
                 await apiDbContext.SaveChangesAsync();
             }
 
-            await PushNotificationForUser(VideoJobUploadState.Success, sendEmail, user.Id.ToString());
+            await PushNotificationForUser(true, sendEmail, user.Id.ToString());
         }
 
         private async Task<(MediaAssetResource, uint, string)> UploadFiles(VideoToUpload videoToUpload, string inputAssetName)
@@ -517,22 +517,9 @@ namespace PSKVideoProjectBackend.Managers
             return rawResponse.ReasonPhrase == "Created" ? _thumbnailBlobUriPrefix + newFileName : "";
         }
 
-        private async Task PushNotificationForUser(VideoJobUploadState state, bool sendEmail, string userId)
+        private async Task PushNotificationForUser(bool isSuccess, bool sendEmail, string userId)
         {
-            string message = "";
-
-            switch (state)
-            {
-                case VideoJobUploadState.Submitted:
-                    message = "Submitted";
-                    break;
-                case VideoJobUploadState.Success:
-                    message = Resources.VideoUploadNotificationSuccess;
-                    break;
-                case VideoJobUploadState.Failure:
-                    message = Resources.VideoUploadNotificationFail;
-                    break;
-            }
+            string message = isSuccess ? Resources.VideoUploadNotificationSuccess : Resources.VideoUploadNotificationFail;
 
             await _signalRManager.SendMessageToUser(userId, message);
         }
