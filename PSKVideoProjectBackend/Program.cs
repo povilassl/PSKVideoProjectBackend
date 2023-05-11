@@ -33,12 +33,12 @@ internal class Program
             $"{Assembly.GetExecutingAssembly().GetName().Name}.xml"));
         });
 
-        string origins = isDevelopment ? "https://localhost" : "https://pskvideoprojectbackendappservice.azurewebsites.net";
+        var origin = isDevelopment ? "http://localhost:3000" : "http://calm-sea-0a95cec03.2.azurestaticapps.net";
 
         builder.Services.AddCors(options => {
             options.AddDefaultPolicy(
                 builder => {
-                    builder.WithOrigins(origins)
+                    builder.WithOrigins(origin)
                         .AllowAnyMethod()
                         .AllowAnyHeader()
                         .AllowCredentials();

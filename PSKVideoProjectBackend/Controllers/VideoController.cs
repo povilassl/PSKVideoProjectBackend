@@ -30,7 +30,7 @@ namespace PSKVideoProjectBackend.Controllers
             {
                 if (startIndex < 0) return StatusCode(StatusCodes.Status500InternalServerError, Resources.ErrIndexLessThanZero);
 
-                if (count <= 0) return StatusCode(StatusCodes.Status500InternalServerError, Resources.ErrCountLessOrEqualZero);
+                if (count <= 0) return Ok(new());
 
                 var videos = _videoRepository.GetListOfVideos(startIndex, count);
 

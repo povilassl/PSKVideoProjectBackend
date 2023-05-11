@@ -52,7 +52,7 @@ namespace PSKVideoProjectBackend.Repositories
 
             user.LastLoginDateTime = DateTime.Now;
 
-            //Chaning last login dateTime
+            //Changing last login dateTime
             _apiDbContext.Users.Update(user);
             await _apiDbContext.SaveChangesAsync();
 
