@@ -52,6 +52,10 @@ internal class Program
                 options.LoginPath = new PathString("/UserInteractionsController/Login");
                 options.Cookie.Name = "VideotekaAuthentication";
                 options.ExpireTimeSpan = TimeSpan.FromDays(10);
+                options.Cookie.SameSite = SameSiteMode.None;
+                options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+                options.Cookie.Path = "/";
+                options.Cookie.HttpOnly = true;
             });
 
         builder.Services.AddAuthorization(options => {
@@ -101,9 +105,8 @@ internal class Program
 
         app.UseRouting();
 
-        app.UseAuthorization();
-
         app.UseAuthentication();
+        app.UseAuthorization();
 
         app.UseMiddleware<LoggingMiddleware>();
 
