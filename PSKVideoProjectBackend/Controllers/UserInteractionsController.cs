@@ -84,7 +84,7 @@ namespace PSKVideoProjectBackend.Controllers
 
                 var authProperties = new AuthenticationProperties {
                     ExpiresUtc = DateTimeOffset.UtcNow.AddDays(10),
-                    IsPersistent = true
+                    IsPersistent = true //TODO: Add checkbox in frontend
                 };
 
                 await HttpContext.SignInAsync(
