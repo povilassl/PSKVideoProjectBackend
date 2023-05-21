@@ -56,6 +56,7 @@ internal class Program
                 options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
                 options.Cookie.Path = "/";
                 options.Cookie.HttpOnly = false;
+                options.Cookie.Domain = ".videoteka.tech";
             });
 
         builder.Services.AddAuthorization(options => {
