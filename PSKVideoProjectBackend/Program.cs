@@ -33,7 +33,7 @@ internal class Program
             $"{Assembly.GetExecutingAssembly().GetName().Name}.xml"));
         });
 
-        string[] origins = { "http://localhost:3000", "https://localhost:3000", "http://calm-sea-0a95cec03.2.azurestaticapps.net", "https://calm-sea-0a95cec03.2.azurestaticapps.net" };
+        string[] origins = { "http://localhost:3000", "https://localhost:3000", "https://videoteka.tech/", "http://videoteka.tech/" };
 
         builder.Services.AddCors(options => {
             options.AddDefaultPolicy(
