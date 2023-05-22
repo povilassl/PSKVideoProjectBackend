@@ -102,6 +102,25 @@ namespace PSKVideoProjectBackend.Controllers
         }
 
         [AllowAnonymous]
+        [HttpGet("LogOut")]
+        public async Task<ActionResult<RegisteredUser>> LogOut()
+        {
+            try
+            {
+                if (User.Identity == null || !User.Identity.IsAuthenticated) return StatusCode(StatusCodes.Status401Unauthorized);
+
+                await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError, Resources.ErrInsertToDB);
+            }
+        }
+
+        [AllowAnonymous]
         [HttpGet("ChangePassword")]
         public async Task<ActionResult<RegisteredUser>> ChangePassword([Required] string username, [Required] string password, [Required] string newPassword)
         {
