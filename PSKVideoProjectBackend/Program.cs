@@ -33,7 +33,8 @@ internal class Program
             $"{Assembly.GetExecutingAssembly().GetName().Name}.xml"));
         });
 
-        string[] origins = { "http://localhost:3000", "https://localhost:3000", "https://videoteka.tech", "http://videoteka.tech" };
+        string[] origins = { "https://localhost:3000", "https://videoteka.tech" };
+        string domain = isDevelopment ? "localhost" : ".videoteka.tech";
 
         builder.Services.AddCors(options => {
             options.AddDefaultPolicy(
@@ -56,7 +57,7 @@ internal class Program
                 options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
                 options.Cookie.Path = "/";
                 options.Cookie.HttpOnly = false;
-                options.Cookie.Domain = ".videoteka.tech";
+                options.Cookie.Domain = domain;
             });
 
         builder.Services.AddAuthorization(options => {
@@ -98,9 +99,11 @@ internal class Program
 
         app.UseCors();
 
-        //enable swagger in both Debug and Release
-        app.UseSwagger();
-        app.UseSwaggerUI();
+        if (isDevelopment)
+        {
+            app.UseSwagger();
+            app.UseSwaggerUI();
+        }
 
         app.UseHttpsRedirection();
 
