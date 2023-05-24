@@ -139,25 +139,50 @@ namespace PSKVideoProjectBackend.Controllers
             }
         }
 
-        /*
-                public async Task<ActionResult<RegisteredUser>> GetUserInfo()
-                {
-                    try
-                    {
-                        if (User.Identity == null || !User.Identity.IsAuthenticated) return StatusCode(StatusCodes.Status401Unauthorized);
+        [HttpGet("GetUserInfo")]
+        public async Task<ActionResult<RegisteredUser>> GetUserInfo()
+        {
+            try
+            {
+                if (User.Identity == null || !User.Identity.IsAuthenticated) return StatusCode(StatusCodes.Status401Unauthorized);
 
-                        if (String.IsNullOrEmpty(User.Identity.Name)) return StatusCode(StatusCodes.Status404NotFound);
-                        var user = await _userRepository.GetUserInfo(User.Identity.Name);
+                if (String.IsNullOrEmpty(User.Identity.Name)) return StatusCode(StatusCodes.Status404NotFound);
 
-                        if (user == null) return StatusCode(StatusCodes.Status401Unauthorized, Resources.CredentialsDontMatchtErr);
+                var userInfo = _userRepository.GetUserInfo(User.Identity.Name);
 
-                        return Ok(user);
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex.Message);
-                        return StatusCode(StatusCodes.Status500InternalServerError, Resources.ErrInsertToDB);
-                    }
-                }*/
+                if (userInfo == null) return StatusCode(StatusCodes.Status404NotFound, Resources.UserNotFoundInDb);
+
+                return Ok(userInfo);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
+        }
+
+
+        [HttpPut("UpdateUserInfo")]
+        public async Task<ActionResult<RegisteredUser>> UpdateUserInfo([FromBody, Required] UserInfo userInfo)
+        {
+            try
+            {
+                if (User.Identity == null || !User.Identity.IsAuthenticated) return StatusCode(StatusCodes.Status401Unauthorized);
+
+                if (String.IsNullOrEmpty(User.Identity.Name)) return StatusCode(StatusCodes.Status404NotFound);
+
+                if (userInfo is null || !_userRepository.ValidateInputUserInfo(userInfo))
+                    return StatusCode(StatusCodes.Status400BadRequest);
+
+                var updatedInfo = _userRepository.UpdateUserInfo(userInfo);
+
+                return Ok(updatedInfo);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
+        }
     }
 }

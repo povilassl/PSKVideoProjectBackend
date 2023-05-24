@@ -70,7 +70,7 @@ internal class Program
 
 
         string dataSource = isDevelopment
-            ? "Data source=DB/ProjectDatabase.db"
+            ? "Data source=ProjectDatabase.db"
             : "Data source=C:/home/site/wwwroot/ProjectDatabase.db";
 
         builder.Services.AddDbContext<ApiDbContext>(o => o.UseSqlite(dataSource));

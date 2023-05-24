@@ -99,16 +99,61 @@ namespace PSKVideoProjectBackend.Repositories
             return result.Entity;
         }
 
-        public Task<User GetUserInfo(string principalName)
+        public UserInfo GetUserInfo(string principalName)
         {
             int id = 0;
 
-            if (!Int32.TryParse(principalName, out id)) return -1;
+            if (!Int32.TryParse(principalName, out id)) return null!;
 
-           
-           var user = _apiDbContext.Users.FirstOrDefault(el => el.Id == id)
+            var user = _apiDbContext.Users.FirstOrDefault(el => el.Id == id);
 
+            if (user is null) return null!;
 
+            return new UserInfo(user);
         }
-}
+
+        internal bool ValidateInputUserInfo(UserInfo userInfo)
+        {
+            return ValidateEmail(userInfo.EmailAddress) &&
+                ValidateUsername(userInfo.Username) &&
+                ValidateNameLastName(userInfo.FirstName) &&
+                ValidateNameLastName(userInfo.LastName);
+        }
+
+        internal bool ValidateUsername(string username)
+        {
+            if (String.IsNullOrEmpty(username)) return false;
+
+            // Username should contain characters a-z A-Z 0-9 and special characters -_
+            string allowedCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_";
+            return username.All(c => allowedCharacters.Contains(c));
+        }
+
+        internal bool ValidateEmail(string email)
+        {
+            if (String.IsNullOrEmpty(email)) return false;
+
+            // Email should be of email format
+            Regex emailRegex = new Regex(@"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$");
+            return emailRegex.IsMatch(email);
+        }
+
+        internal bool ValidateNameLastName(string name)
+        {
+            if (String.IsNullOrEmpty(name)) return false;
+
+            // Name and lastname should only contain characters a-z A-Z
+            Regex nameRegex = new Regex("^[a-zA-Z]+$");
+            return nameRegex.IsMatch(name);
+        }
+
+        internal async Task<UserInfo> UpdateUserInfo(UserInfo userInfo)
+        {
+            var updatedInfo = new RegisteredUser(userInfo);
+            _apiDbContext.Users.Update(updatedInfo);
+            await _apiDbContext.SaveChangesAsync();
+
+            return new UserInfo(updatedInfo);
+        }
+    }
 }

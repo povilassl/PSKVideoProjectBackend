@@ -12,7 +12,22 @@
 
         public UserInfo()
         {
+            Username = "";
+            EmailAddress = "";
+            AccountCreationDateTime = DateTime.MinValue;
+            ProfilePictureURL = "";
+            FirstName = "";
+            LastName = "";
+        }
 
+        public UserInfo(RegisteredUser user)
+        {
+            Username = user.Username;
+            EmailAddress = user.EmailAddress;
+            AccountCreationDateTime = user.AccountCreationDateTime;
+            ProfilePictureURL = user.ProfilePictureURL;
+            FirstName = user.FirstName;
+            LastName = user.LastName;
         }
     }
 }
