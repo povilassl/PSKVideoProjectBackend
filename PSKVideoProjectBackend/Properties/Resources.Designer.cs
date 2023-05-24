@@ -259,6 +259,15 @@ namespace PSKVideoProjectBackend.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Incorrect video format. Only mp4 is allowed.
+        /// </summary>
+        public static string IncorrectVideoFormat {
+            get {
+                return ResourceManager.GetString("IncorrectVideoFormat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Password didnt pass the security checks.
         /// </summary>
         public static string PasswordNotSecureErr {
