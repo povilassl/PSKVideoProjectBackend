@@ -88,6 +88,15 @@ namespace PSKVideoProjectBackend.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Error: this endpoint can be called only in production.
+        /// </summary>
+        public static string ErrEnvNotProduction {
+            get {
+                return ResourceManager.GetString("ErrEnvNotProduction", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Thumbnail image can not be larger than 1 Mb.
         /// </summary>
         public static string ErrImageTooLarge {
@@ -255,6 +264,15 @@ namespace PSKVideoProjectBackend.Properties {
         public static string IncorrectImageFormat {
             get {
                 return ResourceManager.GetString("IncorrectImageFormat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Incorrect video format. Only mp4 is allowed.
+        /// </summary>
+        public static string IncorrectVideoFormat {
+            get {
+                return ResourceManager.GetString("IncorrectVideoFormat", resourceCulture);
             }
         }
         

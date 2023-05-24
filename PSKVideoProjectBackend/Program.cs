@@ -38,7 +38,8 @@ internal class Program
             $"{Assembly.GetExecutingAssembly().GetName().Name}.xml"));
         });
 
-        string[] origins = { "https://localhost:3000", "https://videoteka.tech" };
+        string[] origins = { "http://localhost:3000", "https://localhost:3000", "https://videoteka.tech" };
+
         string domain = isDevelopment ? "localhost" : ".videoteka.tech";
 
         builder.Services.AddCors(options => {
@@ -96,7 +97,11 @@ internal class Program
             var scopeFactory = provider.GetService<IServiceScopeFactory>();
 
             var myService = new AzureMediaManager(signalRManager!, logger, scopeFactory!);
-            //myService.InitManager().Wait();
+
+            //Enable Manager only in Production (video upload is disabled in development because of permissions)
+            if (!isDevelopment)
+                myService.InitManager().Wait();
+          
             return myService;
         });
 
