@@ -142,6 +142,15 @@ namespace PSKVideoProjectBackend.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Inconsistent user info versions .
+        /// </summary>
+        public static string ErrUserInfoVersions {
+            get {
+                return ResourceManager.GetString("ErrUserInfoVersions", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Video with the supplied Id not found .
         /// </summary>
         public static string ErrVideoNotFoundById {

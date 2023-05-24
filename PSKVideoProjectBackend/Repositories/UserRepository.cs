@@ -14,6 +14,8 @@ using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Identity;
 using System.Data;
 using System.Security.Principal;
+using PSKVideoProjectBackend.Models.Enums;
+using Microsoft.EntityFrameworkCore.ChangeTracking.Internal;
 
 namespace PSKVideoProjectBackend.Repositories
 {
@@ -31,6 +33,15 @@ namespace PSKVideoProjectBackend.Repositories
         public async Task<bool> CheckIfUsernameTaken(string username)
         {
             return _apiDbContext.Users.Any(el => el.Username == username);
+        }
+
+        public async Task<uint> GetUserIdByUsername(string username)
+        {
+            var user = await _apiDbContext.Users.FirstOrDefaultAsync(el => el.Username == username);
+
+            if (user == null) return 0;
+
+            return user.Id;
         }
 
         public async Task<RegisteredUser> RegisterNewUser(UserToRegister userToRegister)
@@ -101,9 +112,8 @@ namespace PSKVideoProjectBackend.Repositories
 
         public UserInfo GetUserInfo(string principalName)
         {
-            int id = 0;
 
-            if (!Int32.TryParse(principalName, out id)) return null!;
+            if (!uint.TryParse(principalName, out uint id)) return null!;
 
             var user = _apiDbContext.Users.FirstOrDefault(el => el.Id == id);
 
@@ -112,12 +122,14 @@ namespace PSKVideoProjectBackend.Repositories
             return new UserInfo(user);
         }
 
-        internal bool ValidateInputUserInfo(UserInfo userInfo)
+        internal InfoValidation ValidateInputUserInfo(UserInfo userInfo)
         {
-            return ValidateEmail(userInfo.EmailAddress) &&
-                ValidateUsername(userInfo.Username) &&
-                ValidateNameLastName(userInfo.FirstName) &&
-                ValidateNameLastName(userInfo.LastName);
+            if (!ValidateEmail(userInfo.EmailAddress)) return InfoValidation.BadEmail;
+            if (!ValidateUsername(userInfo.Username)) return InfoValidation.BadUsername;
+            if (!ValidateNameLastName(userInfo.FirstName)) return InfoValidation.BadFirstName;
+            if (!ValidateNameLastName(userInfo.LastName)) return InfoValidation.BadLastName;
+
+            return InfoValidation.Validated;
         }
 
         internal bool ValidateUsername(string username)
@@ -147,13 +159,34 @@ namespace PSKVideoProjectBackend.Repositories
             return nameRegex.IsMatch(name);
         }
 
-        internal async Task<UserInfo> UpdateUserInfo(UserInfo userInfo)
+        internal async Task<UserInfo> UpdateUserInfo(UserInfo userInfo, uint userId)
         {
-            var updatedInfo = new RegisteredUser(userInfo);
-            _apiDbContext.Users.Update(updatedInfo);
+            var existingUser = _apiDbContext.Users.FirstOrDefault(el => el.Id == userId);
+
+            existingUser.Username = userInfo.Username;
+            existingUser.EmailAddress = userInfo.EmailAddress;
+            existingUser.FirstName = userInfo.FirstName;
+            existingUser.LastName = userInfo.LastName;
+            existingUser.LastInfoUpdateDateTime = userInfo.LastInfoUpdateDateTime;
+            existingUser.LastInfoUpdateDateTime = DateTime.Now;
+
+            _apiDbContext.Users.Update(existingUser);
             await _apiDbContext.SaveChangesAsync();
 
-            return new UserInfo(updatedInfo);
+            return new UserInfo(existingUser);
+        }
+
+        internal bool ValidateInfoVersions(string principalName, UserInfo userInfo)
+        {
+            if (!uint.TryParse(principalName, out uint id)) return false;
+
+            var user = _apiDbContext.Users.FirstOrDefault(el => el.Id == id);
+
+            if (user == null) return false;
+
+            if (user.LastInfoUpdateDateTime != userInfo.LastInfoUpdateDateTime) return false;
+
+            return true;
         }
     }
 }

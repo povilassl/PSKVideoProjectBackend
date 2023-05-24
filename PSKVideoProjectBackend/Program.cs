@@ -25,7 +25,12 @@ internal class Program
 
         var builder = WebApplication.CreateBuilder(args);
 
-        builder.Services.AddControllers();
+        builder.Services.AddControllers()
+            .AddNewtonsoftJson(options => {
+                options.SerializerSettings.DateTimeZoneHandling = Newtonsoft.Json.DateTimeZoneHandling.RoundtripKind;
+                options.SerializerSettings.DateFormatHandling = Newtonsoft.Json.DateFormatHandling.IsoDateFormat;
+            });
+
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen(c => {
@@ -91,7 +96,7 @@ internal class Program
             var scopeFactory = provider.GetService<IServiceScopeFactory>();
 
             var myService = new AzureMediaManager(signalRManager!, logger, scopeFactory!);
-            myService.InitManager().Wait();
+            //myService.InitManager().Wait();
             return myService;
         });
 

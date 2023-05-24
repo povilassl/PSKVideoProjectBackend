@@ -8,6 +8,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
+using PSKVideoProjectBackend.Models.Enums;
 
 namespace PSKVideoProjectBackend.Controllers
 {
@@ -140,7 +141,7 @@ namespace PSKVideoProjectBackend.Controllers
         }
 
         [HttpGet("GetUserInfo")]
-        public async Task<ActionResult<RegisteredUser>> GetUserInfo()
+        public async Task<ActionResult<UserInfo>> GetUserInfo()
         {
             try
             {
@@ -163,18 +164,27 @@ namespace PSKVideoProjectBackend.Controllers
 
 
         [HttpPut("UpdateUserInfo")]
-        public async Task<ActionResult<RegisteredUser>> UpdateUserInfo([FromBody, Required] UserInfo userInfo)
+        public async Task<ActionResult<RegisteredUser>> UpdateUserInfo([FromBody, Required] UserInfo userInfo, bool overwriteChanges = false)
         {
             try
             {
-                if (User.Identity == null || !User.Identity.IsAuthenticated) return StatusCode(StatusCodes.Status401Unauthorized);
+                if (User.Identity == null || !User.Identity.IsAuthenticated ||
+                    String.IsNullOrEmpty(User.Identity.Name) || !uint.TryParse(User.Identity.Name, out uint userId))
+                    return StatusCode(StatusCodes.Status401Unauthorized);
 
-                if (String.IsNullOrEmpty(User.Identity.Name)) return StatusCode(StatusCodes.Status404NotFound);
+                var validate = _userRepository.ValidateInputUserInfo(userInfo);
 
-                if (userInfo is null || !_userRepository.ValidateInputUserInfo(userInfo))
-                    return StatusCode(StatusCodes.Status400BadRequest);
+                if (validate != InfoValidation.Validated) return StatusCode(StatusCodes.Status400BadRequest, validate.ToString());
 
-                var updatedInfo = _userRepository.UpdateUserInfo(userInfo);
+                if (!overwriteChanges && !_userRepository.ValidateInfoVersions(User.Identity.Name, userInfo))
+                    return StatusCode(StatusCodes.Status409Conflict, Resources.ErrUserInfoVersions);
+
+                var usernameTakenBy = await _userRepository.GetUserIdByUsername(userInfo.Username);
+
+                if (usernameTakenBy != 0 && usernameTakenBy != userId)
+                    return StatusCode(StatusCodes.Status409Conflict, Resources.UsernameTakenErr);
+
+                var updatedInfo = await _userRepository.UpdateUserInfo(userInfo, userId);
 
                 return Ok(updatedInfo);
             }
