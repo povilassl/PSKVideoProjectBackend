@@ -48,5 +48,13 @@ namespace PSKVideoProjectBackend.Models
             Salt = HashHelpers.GenerateSalt();
             PasswordHashed = userToRegister.Password.HashPassword(Salt);
         }
+
+        public RegisteredUser(UserInfo userInfo)
+        {
+            Username = userInfo.Username;
+            EmailAddress = userInfo.EmailAddress;
+            FirstName = userInfo.FirstName;
+            LastName = userInfo.LastName;
+        }
     }
 }
