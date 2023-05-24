@@ -198,4 +198,7 @@
   <data name="ErrEnvNotProduction" xml:space="preserve">
     <value>Error: this endpoint can be called only in production</value>
   </data>
+  <data name="IncorrectVideoFormat" xml:space="preserve">
+    <value>Incorrect video format. Only mp4 is allowed</value>
+  </data>
 </root>
