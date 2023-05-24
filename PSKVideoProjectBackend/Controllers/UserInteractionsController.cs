@@ -58,6 +58,8 @@ namespace PSKVideoProjectBackend.Controllers
                 var passSecure = _userRepository.CheckIfPasswordSecure(userToRegister.Password);
                 if (!passSecure) return StatusCode(StatusCodes.Status400BadRequest, Resources.PasswordNotSecureErr);
 
+                if (!_userRepository.ValidateUsername(userToRegister.Username)) return BadRequest(Resources.BadUsernameErr);
+
                 var usernameTaken = await _userRepository.CheckIfUsernameTaken(userToRegister.Username);
                 if (usernameTaken) return StatusCode(StatusCodes.Status409Conflict, Resources.UsernameTakenErr);
 
@@ -85,7 +87,7 @@ namespace PSKVideoProjectBackend.Controllers
 
                 var authProperties = new AuthenticationProperties {
                     ExpiresUtc = DateTimeOffset.UtcNow.AddDays(10),
-                    IsPersistent = true //TODO: Add checkbox in frontend
+                    IsPersistent = true
                 };
 
                 await HttpContext.SignInAsync(
@@ -182,7 +184,7 @@ namespace PSKVideoProjectBackend.Controllers
                 var usernameTakenBy = await _userRepository.GetUserIdByUsername(userInfo.Username);
 
                 if (usernameTakenBy != 0 && usernameTakenBy != userId)
-                    return StatusCode(StatusCodes.Status409Conflict, Resources.UsernameTakenErr);
+                    return StatusCode(StatusCodes.Status409Conflict, InfoValidation.UsernameTaken);
 
                 var updatedInfo = await _userRepository.UpdateUserInfo(userInfo, userId);
 
