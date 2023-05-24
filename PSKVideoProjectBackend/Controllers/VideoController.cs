@@ -14,11 +14,13 @@ namespace PSKVideoProjectBackend.Controllers
     {
         private readonly VideoRepository _videoRepository;
         private readonly ILogger<VideoController> _logger;
+        private readonly IHostEnvironment _hostEnvironment;
 
-        public VideoController(VideoRepository videoRepository, ILogger<VideoController> logger)
+        public VideoController(VideoRepository videoRepository, ILogger<VideoController> logger, IHostEnvironment hostEnvironment)
         {
             _videoRepository = videoRepository;
             _logger = logger;
+            _hostEnvironment = hostEnvironment;
         }
 
         //TODO: galima bus padaryt specific selection of videos for logged in users
@@ -50,19 +52,24 @@ namespace PSKVideoProjectBackend.Controllers
         {
             try
             {
+                if (_hostEnvironment.IsDevelopment()) return StatusCode(StatusCodes.Status404NotFound, Resources.ErrEnvNotProduction);
+
                 if (User.Identity == null || !User.Identity.IsAuthenticated) return StatusCode(StatusCodes.Status401Unauthorized);
+
+                var user = await _videoRepository.GetUserByPrincipal(User);
+                if (user == null) return StatusCode(StatusCodes.Status500InternalServerError, Resources.UserNotFoundInDb);
 
                 if (video.ThumbnailImage.ContentType != "image/jpeg" && video.ThumbnailImage.ContentType != "image/png")
                     return StatusCode(StatusCodes.Status400BadRequest, Resources.IncorrectImageFormat);
+
+                if (video.VideoFile.ContentType != "video/mp4")
+                    return StatusCode(StatusCodes.Status400BadRequest, Resources.IncorrectVideoFormat);
 
                 if (video.ThumbnailImage.Length > Math.Pow(10, 6)) //1 Mb
                     return StatusCode(StatusCodes.Status400BadRequest, Resources.ErrImageTooLarge);
 
                 if (video.VideoFile.Length > 10 * Math.Pow(10, 6))// 10 Mb
                     return StatusCode(StatusCodes.Status400BadRequest, Resources.ErrVideoTooLarge);
-
-                var user = await _videoRepository.GetUserByPrincipal(User);
-                if (user == null) return StatusCode(StatusCodes.Status500InternalServerError, Resources.UserNotFoundInDb);
 
                 var res = await _videoRepository.UploadVideo(video, user, sendEmail);
 
