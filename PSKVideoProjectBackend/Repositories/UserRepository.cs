@@ -136,8 +136,10 @@ namespace PSKVideoProjectBackend.Repositories
         {
             if (String.IsNullOrEmpty(username)) return false;
 
-            // Username should contain characters a-z A-Z 0-9 and special characters -_
-            string allowedCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_";
+            if (username.Length <= 4 || username.Length > 20) return false;
+
+            // Username should contain characters a-z A-Z 0-9 
+            string allowedCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
             return username.All(c => allowedCharacters.Contains(c));
         }
 
@@ -146,13 +148,15 @@ namespace PSKVideoProjectBackend.Repositories
             if (String.IsNullOrEmpty(email)) return false;
 
             // Email should be of email format
-            Regex emailRegex = new Regex(@"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$");
+            var emailRegex = new Regex(@"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$");
             return emailRegex.IsMatch(email);
         }
 
         internal bool ValidateNameLastName(string name)
         {
             if (String.IsNullOrEmpty(name)) return false;
+
+            if (name.Length > 50) return false;
 
             // Name and lastname should only contain characters a-z A-Z
             Regex nameRegex = new Regex("^[a-zA-Z]+$");
@@ -161,7 +165,7 @@ namespace PSKVideoProjectBackend.Repositories
 
         internal async Task<UserInfo> UpdateUserInfo(UserInfo userInfo, uint userId)
         {
-            var existingUser = _apiDbContext.Users.FirstOrDefault(el => el.Id == userId);
+            var existingUser = _apiDbContext.Users.FirstOrDefault(el => el.Id == userId)!;
 
             existingUser.Username = userInfo.Username;
             existingUser.EmailAddress = userInfo.EmailAddress;
