@@ -195,4 +195,7 @@
   <data name="VideoUploadNotificationSuccess" xml:space="preserve">
     <value>Your video was uploaded successfully</value>
   </data>
+  <data name="ErrEnvNotProduction" xml:space="preserve">
+    <value>Error: this endpoint can be called only in production</value>
+  </data>
 </root>
