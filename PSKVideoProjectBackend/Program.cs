@@ -34,6 +34,8 @@ internal class Program
         });
 
         string[] origins = { "http://localhost:3000", "https://localhost:3000", "https://videoteka.tech/" };
+        
+        string domain = isDevelopment ? "localhost" : ".videoteka.tech";
 
         builder.Services.AddCors(options => {
             options.AddDefaultPolicy(
@@ -55,7 +57,8 @@ internal class Program
                 options.Cookie.SameSite = SameSiteMode.None;
                 options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
                 options.Cookie.Path = "/";
-                options.Cookie.HttpOnly = true;
+                options.Cookie.HttpOnly = false;
+                options.Cookie.Domain = domain;
             });
 
         builder.Services.AddAuthorization(options => {
@@ -101,9 +104,11 @@ internal class Program
 
         app.UseCors();
 
-        //enable swagger in both Debug and Release
-        app.UseSwagger();
-        app.UseSwaggerUI();
+        if (isDevelopment)
+        {
+            app.UseSwagger();
+            app.UseSwaggerUI();
+        }
 
         app.UseHttpsRedirection();
 
