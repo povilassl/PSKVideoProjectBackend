@@ -33,8 +33,8 @@ internal class Program
             $"{Assembly.GetExecutingAssembly().GetName().Name}.xml"));
         });
 
-        string[] origins = { "http://localhost:3000", "https://localhost:3000", "https://videoteka.tech/" };
-        
+        string[] origins = { "http://localhost:3000", "https://localhost:3000", "https://videoteka.tech" };
+
         string domain = isDevelopment ? "localhost" : ".videoteka.tech";
 
         builder.Services.AddCors(options => {
