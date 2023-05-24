@@ -195,4 +195,7 @@
   <data name="VideoUploadNotificationSuccess" xml:space="preserve">
     <value>Your video was uploaded successfully</value>
   </data>
+  <data name="ErrUserInfoVersions" xml:space="preserve">
+    <value>Inconsistent user info versions </value>
+  </data>
 </root>

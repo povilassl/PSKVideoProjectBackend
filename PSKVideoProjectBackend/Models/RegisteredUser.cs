@@ -4,6 +4,7 @@ using System.Security.Cryptography;
 using Konscious.Security.Cryptography;
 using System.Text;
 using PSKVideoProjectBackend.Helpers;
+using Microsoft.Extensions.Azure;
 
 namespace PSKVideoProjectBackend.Models
 {
@@ -17,6 +18,7 @@ namespace PSKVideoProjectBackend.Models
         public byte[] Salt { get; set; }
         public DateTime AccountCreationDateTime { get; set; }
         public DateTime LastLoginDateTime { get; set; }
+        public DateTime LastInfoUpdateDateTime { get; set; }
         public string ProfilePictureURL { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }
@@ -28,6 +30,7 @@ namespace PSKVideoProjectBackend.Models
             PasswordHashed = new byte[0];
             AccountCreationDateTime = DateTime.Now;
             LastLoginDateTime = DateTime.MinValue; //MinValue means that the user has never logged in
+            LastInfoUpdateDateTime = DateTime.MinValue;
             ProfilePictureURL = String.Empty; //TODO: change to some filler (or is it better on frontend?)
             FirstName = Resources.FillerFirstName;
             LastName = Resources.FillerLastName;
@@ -42,19 +45,12 @@ namespace PSKVideoProjectBackend.Models
 
             AccountCreationDateTime = DateTime.Now;
             LastLoginDateTime = DateTime.MinValue; //MinValue means that the user has never logged in
+            LastInfoUpdateDateTime = DateTime.Now;
             ProfilePictureURL = String.Empty; //TODO: change to some filler (or is it better on frontend?)            
 
             //hashing the password
             Salt = HashHelpers.GenerateSalt();
             PasswordHashed = userToRegister.Password.HashPassword(Salt);
-        }
-
-        public RegisteredUser(UserInfo userInfo)
-        {
-            Username = userInfo.Username;
-            EmailAddress = userInfo.EmailAddress;
-            FirstName = userInfo.FirstName;
-            LastName = userInfo.LastName;
         }
     }
 }
