@@ -197,6 +197,7 @@
   </data>
   <data name="ErrUserInfoVersions" xml:space="preserve">
     <value>Inconsistent user info versions </value>
+  </data>
   <data name="ErrEnvNotProduction" xml:space="preserve">
     <value>Error: this endpoint can be called only in production</value>
   </data>
