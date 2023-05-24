@@ -204,4 +204,7 @@
   <data name="IncorrectVideoFormat" xml:space="preserve">
     <value>Incorrect video format. Only mp4 is allowed</value>
   </data>
+  <data name="BadUsernameErr" xml:space="preserve">
+    <value>Username should only consist of letters and numbers. Length should be [4:20]</value>
+  </data>
 </root>
