@@ -138,5 +138,26 @@ namespace PSKVideoProjectBackend.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, Resources.ErrInsertToDB);
             }
         }
+
+        /*
+                public async Task<ActionResult<RegisteredUser>> GetUserInfo()
+                {
+                    try
+                    {
+                        if (User.Identity == null || !User.Identity.IsAuthenticated) return StatusCode(StatusCodes.Status401Unauthorized);
+
+                        if (String.IsNullOrEmpty(User.Identity.Name)) return StatusCode(StatusCodes.Status404NotFound);
+                        var user = await _userRepository.GetUserInfo(User.Identity.Name);
+
+                        if (user == null) return StatusCode(StatusCodes.Status401Unauthorized, Resources.CredentialsDontMatchtErr);
+
+                        return Ok(user);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex.Message);
+                        return StatusCode(StatusCodes.Status500InternalServerError, Resources.ErrInsertToDB);
+                    }
+                }*/
     }
 }

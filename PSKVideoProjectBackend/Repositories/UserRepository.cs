@@ -98,5 +98,17 @@ namespace PSKVideoProjectBackend.Repositories
 
             return result.Entity;
         }
-    }
+
+        public Task<User GetUserInfo(string principalName)
+        {
+            int id = 0;
+
+            if (!Int32.TryParse(principalName, out id)) return -1;
+
+           
+           var user = _apiDbContext.Users.FirstOrDefault(el => el.Id == id)
+
+
+        }
+}
 }
