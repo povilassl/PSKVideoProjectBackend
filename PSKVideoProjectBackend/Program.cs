@@ -25,7 +25,12 @@ internal class Program
 
         var builder = WebApplication.CreateBuilder(args);
 
-        builder.Services.AddControllers();
+        builder.Services.AddControllers()
+            .AddNewtonsoftJson(options => {
+                options.SerializerSettings.DateTimeZoneHandling = Newtonsoft.Json.DateTimeZoneHandling.RoundtripKind;
+                options.SerializerSettings.DateFormatHandling = Newtonsoft.Json.DateFormatHandling.IsoDateFormat;
+            });
+
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen(c => {
@@ -71,7 +76,7 @@ internal class Program
 
 
         string dataSource = isDevelopment
-            ? "Data source=DB/ProjectDatabase.db"
+            ? "Data source=ProjectDatabase.db"
             : "Data source=C:/home/site/wwwroot/ProjectDatabase.db";
 
         builder.Services.AddDbContext<ApiDbContext>(o => o.UseSqlite(dataSource));
@@ -96,7 +101,7 @@ internal class Program
             //Enable Manager only in Production (video upload is disabled in development because of permissions)
             if (!isDevelopment)
                 myService.InitManager().Wait();
-
+          
             return myService;
         });
 

@@ -61,6 +61,15 @@ namespace PSKVideoProjectBackend.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Username should only consist of letters and numbers. Length should be [4:20].
+        /// </summary>
+        public static string BadUsernameErr {
+            get {
+                return ResourceManager.GetString("BadUsernameErr", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to An account with specified credentials doesn&apos;t exist.
         /// </summary>
         public static string CredentialsDontMatchtErr {
@@ -147,6 +156,15 @@ namespace PSKVideoProjectBackend.Properties {
         public static string ErrRetrieveFromDB {
             get {
                 return ResourceManager.GetString("ErrRetrieveFromDB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Inconsistent user info versions .
+        /// </summary>
+        public static string ErrUserInfoVersions {
+            get {
+                return ResourceManager.GetString("ErrUserInfoVersions", resourceCulture);
             }
         }
         
