@@ -122,6 +122,18 @@ namespace PSKVideoProjectBackend.Repositories
             return new UserInfo(user);
         }
 
+        internal InfoValidation ValidateInputUserInfo(UserToRegister userToRegister)
+        {
+            var userInfo = new UserInfo() {
+                Username = userToRegister.Username,
+                EmailAddress = userToRegister.EmailAddress,
+                FirstName = userToRegister.FirstName,
+                LastName = userToRegister.LastName,
+            };
+
+            return ValidateInputUserInfo(userInfo);
+        }
+
         internal InfoValidation ValidateInputUserInfo(UserInfo userInfo)
         {
             if (!ValidateEmail(userInfo.EmailAddress)) return InfoValidation.BadEmail;
