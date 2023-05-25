@@ -195,10 +195,16 @@
   <data name="VideoUploadNotificationSuccess" xml:space="preserve">
     <value>Your video was uploaded successfully</value>
   </data>
+  <data name="ErrUserInfoVersions" xml:space="preserve">
+    <value>Inconsistent user info versions </value>
+  </data>
   <data name="ErrEnvNotProduction" xml:space="preserve">
     <value>Error: this endpoint can be called only in production</value>
   </data>
   <data name="IncorrectVideoFormat" xml:space="preserve">
     <value>Incorrect video format. Only mp4 is allowed</value>
+  </data>
+  <data name="BadUsernameErr" xml:space="preserve">
+    <value>Username should only consist of letters and numbers. Length should be [4:20]</value>
   </data>
 </root>
