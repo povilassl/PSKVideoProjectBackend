@@ -58,7 +58,8 @@ namespace PSKVideoProjectBackend.Controllers
                 var passSecure = _userRepository.CheckIfPasswordSecure(userToRegister.Password);
                 if (!passSecure) return StatusCode(StatusCodes.Status400BadRequest, Resources.PasswordNotSecureErr);
 
-                if (!_userRepository.ValidateUsername(userToRegister.Username)) return BadRequest(Resources.BadUsernameErr);
+                var validateInfo = _userRepository.ValidateInputUserInfo(userToRegister);
+                if (validateInfo != InfoValidation.Validated) return BadRequest(validateInfo.ToString());
 
                 var usernameTaken = await _userRepository.CheckIfUsernameTaken(userToRegister.Username);
                 if (usernameTaken) return StatusCode(StatusCodes.Status409Conflict, Resources.UsernameTakenErr);
@@ -184,7 +185,7 @@ namespace PSKVideoProjectBackend.Controllers
                 var usernameTakenBy = await _userRepository.GetUserIdByUsername(userInfo.Username);
 
                 if (usernameTakenBy != 0 && usernameTakenBy != userId)
-                    return StatusCode(StatusCodes.Status409Conflict, InfoValidation.UsernameTaken);
+                    return StatusCode(StatusCodes.Status409Conflict, InfoValidation.UsernameTaken.ToString());
 
                 var updatedInfo = await _userRepository.UpdateUserInfo(userInfo, userId);
 
