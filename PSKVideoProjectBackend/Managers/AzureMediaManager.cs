@@ -212,6 +212,7 @@ namespace PSKVideoProjectBackend.Managers
 
             var uploaded = new UploadedVideo(videoToUpload) {
                 Username = user.Username,
+                UserId = user.Id,
                 ThumbnailURL = thumbnailUrl,
                 VideoURL = streamUrl,
                 VideoDurationInSeconds = duration
