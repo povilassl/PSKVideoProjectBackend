@@ -76,7 +76,7 @@ internal class Program
 
 
         string dataSource = isDevelopment
-            ? "Data source=ProjectDatabase.db"
+            ? "Data source=DB/ProjectDatabase.db"
             : "Data source=C:/home/site/wwwroot/ProjectDatabase.db";
 
         builder.Services.AddDbContext<ApiDbContext>(o => o.UseSqlite(dataSource));
@@ -101,7 +101,7 @@ internal class Program
             //Enable Manager only in Production (video upload is disabled in development because of permissions)
             if (!isDevelopment)
                 myService.InitManager().Wait();
-          
+
             return myService;
         });
 
