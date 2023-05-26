@@ -10,6 +10,7 @@ using PSKVideoProjectBackend.Hubs;
 using PSKVideoProjectBackend.Helpers;
 using PSKVideoProjectBackend.Middleware;
 using PSKVideoProjectBackend.Managers;
+using PSKVideoProjectBackend.Factories;
 
 internal class Program
 {
@@ -74,7 +75,6 @@ internal class Program
 
         builder.Services.AddSignalR();
 
-
         string dataSource = isDevelopment
             ? "Data source=DB/ProjectDatabase.db"
             : "Data source=C:/home/site/wwwroot/ProjectDatabase.db";
@@ -103,6 +103,12 @@ internal class Program
                 myService.InitManager().Wait();
 
             return myService;
+        });
+
+        builder.Services.AddSingleton(provider => {
+            var hostEnvironment = provider.GetRequiredService<IHostEnvironment>();
+            var logger = provider.GetRequiredService<ILogger<ValidatorFactory>>();
+            return new ValidatorFactory("validationConfig.json", hostEnvironment, logger);
         });
 
         var app = builder.Build();
