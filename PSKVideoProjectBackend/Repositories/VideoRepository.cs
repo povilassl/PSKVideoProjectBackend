@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Core.Infrastructure;
 using Microsoft.Azure.Management.Media.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
@@ -38,7 +39,15 @@ namespace PSKVideoProjectBackend.Repositories
             if (endIndex >= allVideos.Count) endIndex = allVideos.Count - 1;
 
             // Create a sublist from the originalList starting at the startIndex and ending at the endIndex
-            return allVideos.GetRange(startIndex, endIndex - startIndex + 1);
+            var videosToReturn = allVideos.GetRange(startIndex, endIndex - startIndex + 1);
+
+            foreach (var el in videosToReturn)
+            {
+                var user = _apiDbContext.Users.FirstOrDefault(user => user.Id == el.UserId);
+                el.Username = user is null ? Resources.FillerVideoUsername : user.Username;
+            }
+
+            return videosToReturn;
         }
 
         /// <summary>
@@ -195,6 +204,7 @@ namespace PSKVideoProjectBackend.Repositories
                 if (parentComment == null) return null!;
             }
 
+            comment.UserId = user.Id;
             comment.Username = user.Username;
             comment.DateTime = DateTime.Now;
 
@@ -243,6 +253,12 @@ namespace PSKVideoProjectBackend.Repositories
                     .Where(el => el.CommentId == parentId)
                     .OrderByDescending(el => el.DateTime)
                     .ToList();
+            }
+
+            foreach (var vid in retList)
+            {
+                var user = _apiDbContext.Users.FirstOrDefault(el => el.Id == vid.UserId);
+                vid.Username = user is null ? Resources.FillerVideoUsername : user.Username;
             }
 
             return retList;
