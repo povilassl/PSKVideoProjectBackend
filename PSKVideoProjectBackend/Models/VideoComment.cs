@@ -16,6 +16,7 @@ namespace PSKVideoProjectBackend.Models
         [Required]
         public string Comment { get; set; }
         public DateTime DateTime { get; set; }
+        public uint UserId { get; set; }
         public string Username { get; set; }
         public bool HasComments { get; set; }
 
@@ -27,6 +28,7 @@ namespace PSKVideoProjectBackend.Models
             Username = Resources.FillerVideoUsername;
             DateTime = DateTime.Now;
             HasComments = false;
+            UserId = 0;
         }
     }
 }
