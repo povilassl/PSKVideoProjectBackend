@@ -6,8 +6,11 @@
         BadPassword,
         BadEmail,
         BadUsername,
+        BadComment,
         UsernameTaken,
         BadFirstName,
-        BadLastName
+        BadLastName,
+        NotSupportedInputType,
+        NotSupplied
     }
 }

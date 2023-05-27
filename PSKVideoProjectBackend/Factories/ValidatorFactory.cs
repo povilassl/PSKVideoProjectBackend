@@ -1,69 +1,92 @@
 ﻿using Microsoft.AspNetCore.Mvc.TagHelpers;
+using Microsoft.Extensions.Primitives;
 using PSKVideoProjectBackend.Interfaces;
 using PSKVideoProjectBackend.Models.Enums;
+using Microsoft.Extensions.Configuration;
+using System.Configuration;
+using System.Diagnostics;
+using PSKVideoProjectBackend.Wrappers;
+using System.Reflection;
+using Microsoft.Extensions.Options;
 
 namespace PSKVideoProjectBackend.Factories
 {
     public class ValidatorFactory
     {
-        private readonly Dictionary<InputType, IValidator> validators;
-        private readonly IHostEnvironment _hostEnvironment;
-        private readonly ILogger<ValidatorFactory> _logger;
+        //private Dictionary<InputType, IInputValidator> _validators;
+        private readonly ValidatorConfigWrapper _validatorConfig;
+        private readonly IOptionsMonitor<ValidatorConfigWrapper> _optionsMonitor;
 
-        public ValidatorFactory(string configFilename, IHostEnvironment hostEnvironment, ILogger<ValidatorFactory> logger)
+        public ValidatorFactory(IOptionsMonitor<ValidatorConfigWrapper> options)
         {
-            validators = new();
-            LoadValidatorsFromConfig(configFilename);
-            _hostEnvironment = hostEnvironment;
-            _logger = logger;
-
-        }
-
-        private void LoadValidatorsFromConfig(string configFilename)
-        {
-            var builder = new ConfigurationBuilder()
-                .SetBasePath(_hostEnvironment.ContentRootPath)
-                .AddJsonFile(configFilename, optional: false, reloadOnChange: true);
-
-            var config = builder.Build();
-
-            foreach (var validatorConfig in config.GetSection("Validators").GetChildren())
-            {
-                var inputTypeString = validatorConfig.GetValue<string>("InputType");
-
-                if (Enum.TryParse<InputType>(inputTypeString, ignoreCase: true, out var inputType))
-                {
-
-                    var validatorClassName = validatorConfig.GetValue<string>("ValidatorClass");
-
-                    var validatorType = Type.GetType(validatorClassName);
-                    if (validatorType != null)
-                    {
-                        var validator = Activator.CreateInstance(validatorType) as IValidator;
-                        validators[inputType] = validator!;
-                    }
-                    else
-                    {
-                        _logger.LogError("Invalid validator class name: " + validatorClassName);
-                        throw new InvalidOperationException("Invalid validator class name: " + validatorClassName);
-                    }
-                }
-                else
-                {
-                    _logger.LogError("Invalid input type: " + inputTypeString);
-                    throw new InvalidOperationException("Invalid input type: " + inputTypeString);
-                }
-            }
+            _optionsMonitor = options;
+            _validatorConfig = options.CurrentValue;
+            //ConfigUpdated();
         }
 
         public bool ValidateInput(string input, InputType inputType)
         {
-            if (validators.TryGetValue(inputType, out var validator))
+            if (_validatorConfig.Validators is null || ConfigUpdated()) ReloadConfig();
+
+            if (_validatorConfig.Validators.TryGetValue(inputType, out var validator))
             {
                 return validator.IsValid(input);
             }
 
             return false;
+        }
+
+        private void ReloadConfig()
+        {
+            _validatorConfig.Validators = new();
+
+            // Get the type of the ValidatorConfigWrapper class
+            Type wrapperType = typeof(ValidatorConfigWrapper);
+
+            // Get all properties of the ValidatorConfigWrapper class
+            PropertyInfo[] properties = wrapperType.GetProperties();
+
+            foreach (PropertyInfo property in properties)
+            {
+                string propertyName = property.Name;
+                object propertyValue = property.GetValue(_optionsMonitor.CurrentValue)!;
+
+                if (propertyName != "Validators")
+                {
+                    if (Enum.TryParse<InputType>(propertyName, ignoreCase: true, out var inputType))
+                    {
+
+                        var validatorClassName = propertyValue as string;
+
+                        var validatorType = Type.GetType(validatorClassName);
+                        if (validatorType != null)
+                        {
+                            var validator = Activator.CreateInstance(validatorType) as IInputValidator;
+                            _validatorConfig.Validators[inputType] = validator!;
+                        }
+                        else
+                        {
+                            throw new InvalidOperationException("Invalid validator class name: " + validatorClassName);
+                        }
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException("Invalid input type:" + propertyName);
+                    }
+                }
+            }
+        }
+
+        private bool ConfigUpdated()
+        {
+            var currentVal = _validatorConfig.Validators;
+            var newV = _optionsMonitor.CurrentValue;
+
+            return !(currentVal[InputType.Username].ToString() == newV.Username.ToString() &&
+                currentVal[InputType.Password].ToString() == newV.Password.ToString() &&
+                currentVal[InputType.Email].ToString() == newV.Email.ToString() &&
+                currentVal[InputType.Comment].ToString() == newV.Comment.ToString() &&
+                currentVal[InputType.Name].ToString() == newV.Name.ToString());
         }
     }
 }
