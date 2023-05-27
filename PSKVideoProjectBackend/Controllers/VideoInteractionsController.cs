@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using PSKVideoProjectBackend.Interfaces;
 using PSKVideoProjectBackend.Models;
 using PSKVideoProjectBackend.Models.Enums;
 using PSKVideoProjectBackend.Properties;
@@ -16,11 +17,14 @@ namespace PSKVideoProjectBackend.Controllers
     {
         private readonly VideoRepository _videoRepository;
         private readonly ILogger<VideoInteractionsController> _logger;
+        private readonly IObjectValidator _objectValidator;
 
-        public VideoInteractionsController(VideoRepository videoRepository, ILogger<VideoInteractionsController> logger)
+        public VideoInteractionsController(VideoRepository videoRepository, ILogger<VideoInteractionsController> logger,
+            IObjectValidator objectValidator)
         {
             _videoRepository = videoRepository;
             _logger = logger;
+            _objectValidator = objectValidator;
         }
 
         [HttpPost("AddLike")]
@@ -122,6 +126,9 @@ namespace PSKVideoProjectBackend.Controllers
 
                 var user = await _videoRepository.GetUserByPrincipal(User);
                 if (user == null) return StatusCode(StatusCodes.Status500InternalServerError, Resources.UserNotFoundInDb);
+
+                var commentValidated = _objectValidator.IsValid(videoComment);
+                if (commentValidated != InfoValidation.Validated) return StatusCode(StatusCodes.Status400BadRequest, commentValidated.ToString());
 
                 videoComment.Id = 0;
                 videoComment.CommentId = 0;
