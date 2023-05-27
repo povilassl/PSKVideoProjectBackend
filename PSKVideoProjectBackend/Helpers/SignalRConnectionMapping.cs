@@ -66,5 +66,24 @@
 
             return new HashSet<string>();
         }
+
+        /// <summary>
+        /// Upon logout remove all user's connections
+        /// </summary>
+        /// <param name="userId"></param>
+        public void DisconnectUser(string userId)
+        {
+            lock (_connections)
+            {
+                if (_connections.TryGetValue(userId, out var connections))
+                {
+                    lock (connections)
+                    {
+                        _connections.Remove(userId);
+                    }
+                }
+            }
+
+        }
     }
 }
