@@ -1,13 +1,16 @@
 ﻿namespace PSKVideoProjectBackend.Models.Enums
 {
-    enum InfoValidation
+    public enum InfoValidation
     {
         Validated,
         BadPassword,
         BadEmail,
         BadUsername,
+        BadComment,
         UsernameTaken,
         BadFirstName,
-        BadLastName
+        BadLastName,
+        NotSupportedInputType,
+        NotSupplied
     }
 }
