@@ -109,11 +109,11 @@ internal class Program
 
         app.UseCors();
 
-        if (isDevelopment)
-        {
-            app.UseSwagger();
-            app.UseSwaggerUI();
-        }
+        //if (isDevelopment)
+        //{
+        app.UseSwagger();
+        app.UseSwaggerUI();
+        //}
 
         app.UseHttpsRedirection();
 
