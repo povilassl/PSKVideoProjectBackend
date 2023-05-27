@@ -1,16 +1,9 @@
 {
-    "Validators": [
-        {
-            "InputType": "Username",
-            "ValidatorClass": "NPSKVideoProjectBackend.Validator.UsernameValidator"
-        },
-        {
-            "InputType": "Password",
-            "ValidatorClass": "NPSKVideoProjectBackend.Validator.PasswordValidator"
-        },
-        {
-            "InputType": "Email",
-            "ValidatorClass": "NPSKVideoProjectBackend.Validator.EmailValidator"
-        },
-    ]
+  "Validators": {
+    "Username": "PSKVideoProjectBackend.Validators.UsernameValidatorBundle+UsernameValidator",
+    "Password": "PSKVideoProjectBackend.Validators.PasswordValidatorBundle+PasswordValidator",
+    "Email": "PSKVideoProjectBackend.Validators.EmailValidatorBundle+EmailValidatorRegex",
+    "Name": "PSKVideoProjectBackend.Validators.NameValidatorBundle+NameValidatorRegex",
+    "Comment": "PSKVideoProjectBackend.Validators.CommentValidatorBundle+CommentValidatorSpecialChars",
+  }
 }

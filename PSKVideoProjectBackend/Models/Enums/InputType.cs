@@ -6,6 +6,6 @@
         Password,
         Email,
         Name,
-        Description
+        Comment
     }
 }

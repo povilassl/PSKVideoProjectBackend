@@ -11,6 +11,10 @@ using PSKVideoProjectBackend.Helpers;
 using PSKVideoProjectBackend.Middleware;
 using PSKVideoProjectBackend.Managers;
 using PSKVideoProjectBackend.Factories;
+using PSKVideoProjectBackend.Validators;
+using PSKVideoProjectBackend.Interfaces;
+using PSKVideoProjectBackend.Wrappers;
+using System.Configuration;
 
 internal class Program
 {
@@ -105,11 +109,16 @@ internal class Program
             return myService;
         });
 
-        builder.Services.AddSingleton(provider => {
-            var hostEnvironment = provider.GetRequiredService<IHostEnvironment>();
-            var logger = provider.GetRequiredService<ILogger<ValidatorFactory>>();
-            return new ValidatorFactory("validationConfig.json", hostEnvironment, logger);
-        });
+
+        var validatorConfig = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("validationConfig.json", optional: false, reloadOnChange: true)
+                .Build();
+
+        builder.Services.Configure<ValidatorConfigWrapper>(validatorConfig.GetSection("Validators"));
+        builder.Services.AddSingleton<ValidatorFactory>();
+
+        builder.Services.AddSingleton<IObjectValidator, ObjectValidator>();
 
         var app = builder.Build();
 
