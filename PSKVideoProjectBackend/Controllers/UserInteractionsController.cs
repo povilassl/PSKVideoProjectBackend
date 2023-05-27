@@ -9,6 +9,8 @@ using System.Diagnostics;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using PSKVideoProjectBackend.Models.Enums;
+using Microsoft.AspNetCore.SignalR;
+using PSKVideoProjectBackend.Helpers;
 
 namespace PSKVideoProjectBackend.Controllers
 {
@@ -18,11 +20,13 @@ namespace PSKVideoProjectBackend.Controllers
     {
         private readonly UserRepository _userRepository;
         private readonly ILogger<UserInteractionsController> _logger;
+        private readonly SignalRConnectionMapping _signalRConnectionMapper;
 
-        public UserInteractionsController(ILogger<UserInteractionsController> logger, UserRepository userRepository)
+        public UserInteractionsController(ILogger<UserInteractionsController> logger, UserRepository userRepository, SignalRConnectionMapping signalRConnectionMapping)
         {
             _userRepository = userRepository;
             _logger = logger;
+            _signalRConnectionMapper = signalRConnectionMapping;
         }
 
         /// <summary>
@@ -111,9 +115,13 @@ namespace PSKVideoProjectBackend.Controllers
         {
             try
             {
-                if (User.Identity == null || !User.Identity.IsAuthenticated) return StatusCode(StatusCodes.Status401Unauthorized);
+                if (User.Identity == null || !User.Identity.IsAuthenticated || String.IsNullOrEmpty(User.Identity.Name))
+                    return StatusCode(StatusCodes.Status401Unauthorized);
 
                 await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+
+                //Disconnect all user's sessions from notificationHub
+                _signalRConnectionMapper.DisconnectUser(User.Identity.Name);
 
                 return Ok();
             }
