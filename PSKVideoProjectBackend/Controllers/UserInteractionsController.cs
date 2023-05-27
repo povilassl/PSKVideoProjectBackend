@@ -9,6 +9,7 @@ using System.Diagnostics;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using PSKVideoProjectBackend.Models.Enums;
+using PSKVideoProjectBackend.Interfaces;
 using Microsoft.AspNetCore.SignalR;
 using PSKVideoProjectBackend.Helpers;
 
@@ -20,12 +21,14 @@ namespace PSKVideoProjectBackend.Controllers
     {
         private readonly UserRepository _userRepository;
         private readonly ILogger<UserInteractionsController> _logger;
+        private readonly IObjectValidator _objectValidator;
         private readonly SignalRConnectionMapping _signalRConnectionMapper;
 
-        public UserInteractionsController(ILogger<UserInteractionsController> logger, UserRepository userRepository, SignalRConnectionMapping signalRConnectionMapping)
+        public UserInteractionsController(ILogger<UserInteractionsController> logger, UserRepository userRepository, IObjectValidator objectValidator, SignalRConnectionMapping signalRConnectionMapping)
         {
             _userRepository = userRepository;
             _logger = logger;
+            _objectValidator = objectValidator;
             _signalRConnectionMapper = signalRConnectionMapping;
         }
 
@@ -59,10 +62,7 @@ namespace PSKVideoProjectBackend.Controllers
             {
                 if (!ModelState.IsValid) return BadRequest(ModelState);
 
-                var passSecure = _userRepository.CheckIfPasswordSecure(userToRegister.Password);
-                if (!passSecure) return StatusCode(StatusCodes.Status400BadRequest, Resources.PasswordNotSecureErr);
-
-                var validateInfo = _userRepository.ValidateInputUserInfo(userToRegister);
+                var validateInfo = _objectValidator.IsValid(userToRegister);
                 if (validateInfo != InfoValidation.Validated) return BadRequest(validateInfo.ToString());
 
                 var usernameTaken = await _userRepository.CheckIfUsernameTaken(userToRegister.Username);
@@ -183,9 +183,8 @@ namespace PSKVideoProjectBackend.Controllers
                     String.IsNullOrEmpty(User.Identity.Name) || !uint.TryParse(User.Identity.Name, out uint userId))
                     return StatusCode(StatusCodes.Status401Unauthorized);
 
-                var validate = _userRepository.ValidateInputUserInfo(userInfo);
-
-                if (validate != InfoValidation.Validated) return StatusCode(StatusCodes.Status400BadRequest, validate.ToString());
+                var validated = _objectValidator.IsValid(userInfo);
+                if (validated != InfoValidation.Validated) return StatusCode(StatusCodes.Status400BadRequest, validated.ToString());
 
                 if (!overwriteChanges && !_userRepository.ValidateInfoVersions(User.Identity.Name, userInfo))
                     return StatusCode(StatusCodes.Status409Conflict, Resources.ErrUserInfoVersions);

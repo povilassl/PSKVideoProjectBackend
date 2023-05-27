@@ -10,6 +10,11 @@ using PSKVideoProjectBackend.Hubs;
 using PSKVideoProjectBackend.Helpers;
 using PSKVideoProjectBackend.Middleware;
 using PSKVideoProjectBackend.Managers;
+using PSKVideoProjectBackend.Factories;
+using PSKVideoProjectBackend.Validators;
+using PSKVideoProjectBackend.Interfaces;
+using PSKVideoProjectBackend.Wrappers;
+using System.Configuration;
 
 internal class Program
 {
@@ -74,7 +79,6 @@ internal class Program
 
         builder.Services.AddSignalR();
 
-
         string dataSource = isDevelopment
             ? "Data source=DB/ProjectDatabase.db"
             : "Data source=C:/home/site/wwwroot/ProjectDatabase.db";
@@ -104,6 +108,17 @@ internal class Program
 
             return myService;
         });
+
+
+        var validatorConfig = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("validationConfig.json", optional: false, reloadOnChange: true)
+                .Build();
+
+        builder.Services.Configure<ValidatorConfigWrapper>(validatorConfig.GetSection("Validators"));
+        builder.Services.AddSingleton<ValidatorFactory>();
+
+        builder.Services.AddSingleton<IObjectValidator, ObjectValidator>();
 
         var app = builder.Build();
 

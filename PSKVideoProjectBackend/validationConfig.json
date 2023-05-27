@@ -1,0 +1,9 @@
+{
+  "Validators": {
+    "Username": "PSKVideoProjectBackend.Validators.UsernameValidatorBundle+UsernameValidator",
+    "Password": "PSKVideoProjectBackend.Validators.PasswordValidatorBundle+PasswordValidator",
+    "Email": "PSKVideoProjectBackend.Validators.EmailValidatorBundle+EmailValidatorRegex",
+    "Name": "PSKVideoProjectBackend.Validators.NameValidatorBundle+NameValidatorRegex",
+    "Comment": "PSKVideoProjectBackend.Validators.CommentValidatorBundle+CommentValidatorSpecialChars",
+  }
+}
