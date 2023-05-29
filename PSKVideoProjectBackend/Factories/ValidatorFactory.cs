@@ -21,7 +21,6 @@ namespace PSKVideoProjectBackend.Factories
         {
             _optionsMonitor = options;
             _validatorConfig = options.CurrentValue;
-            //ConfigUpdated();
         }
 
         public bool ValidateInput(string input, InputType inputType)
