@@ -5,12 +5,9 @@ using PSKVideoProjectBackend.Models;
 using PSKVideoProjectBackend.Properties;
 using PSKVideoProjectBackend.Repositories;
 using System.ComponentModel.DataAnnotations;
-using System.Diagnostics;
-using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using PSKVideoProjectBackend.Models.Enums;
 using PSKVideoProjectBackend.Interfaces;
-using Microsoft.AspNetCore.SignalR;
 using PSKVideoProjectBackend.Helpers;
 
 namespace PSKVideoProjectBackend.Controllers

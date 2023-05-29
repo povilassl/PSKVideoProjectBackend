@@ -1,0 +1,4 @@
+Don't delete this file
+
+There is a problem, that git doesn't track empty files, but we need to have this folder because it will be the place for out sqlite database files.
+
