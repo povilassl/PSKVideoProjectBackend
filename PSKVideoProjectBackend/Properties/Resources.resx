@@ -207,4 +207,7 @@
   <data name="BadUsernameErr" xml:space="preserve">
     <value>Username should only consist of letters and numbers. Length should be [4:20]</value>
   </data>
+  <data name="ErrEnvNotDevelopment" xml:space="preserve">
+    <value>Error: this endpoint can be called only in development</value>
+  </data>
 </root>
