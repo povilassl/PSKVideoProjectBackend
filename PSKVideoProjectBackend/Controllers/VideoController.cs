@@ -96,6 +96,8 @@ namespace PSKVideoProjectBackend.Controllers
         {
             try
             {
+                if (_hostEnvironment.IsProduction()) return StatusCode(StatusCodes.Status404NotFound, Resources.ErrEnvNotDevelopment);
+
                 var resList = new List<UploadedVideo>();
 
                 foreach (var video in videos)

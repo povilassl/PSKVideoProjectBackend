@@ -97,6 +97,15 @@ namespace PSKVideoProjectBackend.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Error: this endpoint can be called only in development.
+        /// </summary>
+        public static string ErrEnvNotDevelopment {
+            get {
+                return ResourceManager.GetString("ErrEnvNotDevelopment", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Error: this endpoint can be called only in production.
         /// </summary>
         public static string ErrEnvNotProduction {
