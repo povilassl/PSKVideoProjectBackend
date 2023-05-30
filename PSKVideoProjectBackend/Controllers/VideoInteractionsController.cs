@@ -17,14 +17,11 @@ namespace PSKVideoProjectBackend.Controllers
     {
         private readonly VideoRepository _videoRepository;
         private readonly ILogger<VideoInteractionsController> _logger;
-        private readonly IObjectValidator _objectValidator;
 
-        public VideoInteractionsController(VideoRepository videoRepository, ILogger<VideoInteractionsController> logger,
-            IObjectValidator objectValidator)
+        public VideoInteractionsController(VideoRepository videoRepository, ILogger<VideoInteractionsController> logger)
         {
             _videoRepository = videoRepository;
             _logger = logger;
-            _objectValidator = objectValidator;
         }
 
         [HttpPost("AddLike")]
@@ -127,9 +124,6 @@ namespace PSKVideoProjectBackend.Controllers
                 var user = await _videoRepository.GetUserByPrincipal(User);
                 if (user == null) return StatusCode(StatusCodes.Status500InternalServerError, Resources.UserNotFoundInDb);
 
-                var commentValidated = _objectValidator.IsValid(videoComment);
-                if (commentValidated != InfoValidation.Validated) return StatusCode(StatusCodes.Status400BadRequest, commentValidated.ToString());
-
                 videoComment.Id = 0;
                 videoComment.CommentId = 0;
                 videoComment.HasComments = false;
@@ -168,7 +162,6 @@ namespace PSKVideoProjectBackend.Controllers
 
                 var result = await _videoRepository.AddComment(videoComment, user);
 
-                //TODO: nelabai sugalvoju kaip padaryt, kai userio neranda, tai irgi grazina null, tada neveikia error message
                 if (result == null) return StatusCode(StatusCodes.Status500InternalServerError, Resources.ErrCommentNotFoundById);
 
                 return Ok(result);
